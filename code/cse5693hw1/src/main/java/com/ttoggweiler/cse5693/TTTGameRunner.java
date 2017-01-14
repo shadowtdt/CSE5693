@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by ttoggweiler on 1/13/17.
+ * Runs the tick-tack-toe game with the specified configuration
  */
 public class TTTGameRunner
 {
