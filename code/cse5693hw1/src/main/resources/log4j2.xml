@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="TTTGame">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%highlight{%-5level %logger{1} - %msg%n}"/>
+        </Console>
+        <File name="GameLog" fileName="logs/game.log">
+            <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
+        </File>
+        <File name="GameTestLog" fileName="logs/gameTest.log">
+            <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="error">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+        <logger name="com.ttoggweiler.cse5693.test" level="debug" additivity="false">
+            <AppenderRef ref="GameTestLog" />
+            <AppenderRef ref="console" />
+        </logger>
+        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
+            <AppenderRef ref="GameLog" />
+            <AppenderRef ref="console" />
+        </logger>
+    </Loggers>
+</Configuration>
