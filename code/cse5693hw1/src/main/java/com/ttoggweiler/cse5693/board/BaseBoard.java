@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -18,9 +19,12 @@ public abstract class BaseBoard
     {
         EMPTY, // No spaces are occupied
         FULL, // No free spaces
-        INTERMEDIATE // Some spaces available
+        INTERMEDIATE, // Some spaces available
+        WINNING // A winning state
     }
 
+    private UUID id = UUID.randomUUID();
+    private long creationTime = System.currentTimeMillis();
     private List<Move> moveHistory = new ArrayList<>();
 
     /* Abstract */
@@ -38,6 +42,26 @@ public abstract class BaseBoard
     abstract void submitMove(Move move);
 
     /* Base implementations */
+    public UUID getId()
+    {
+        return id;
+    }
+
+    public void setId(UUID id)
+    {
+        this.id = id;
+    }
+
+    public long getCreationTime()
+    {
+        return creationTime;
+    }
+
+    public void setCreationTime(long creationTime)
+    {
+        this.creationTime = creationTime;
+    }
+
     public void makeMove(Move move) throws IllegalMoveException
     {
         if(!validateMove(move))throw new IllegalMoveException();
@@ -102,6 +126,14 @@ public abstract class BaseBoard
                 .filter(move -> Arrays.equals(move.getMove(),coordinates))
                 .findAny()
                 .map(Move::getPlayer);
+    }
+
+    public Optional<Move> findMove(int... coordinates)
+    {
+        if (moveHistory.isEmpty()) return Optional.empty();
+        return moveHistory.stream()
+                .filter(move -> Arrays.equals(move.getMove(),coordinates))
+                .findAny();
     }
 
 }

@@ -2,6 +2,7 @@ package com.ttoggweiler.cse5693.player;
 
 import com.ttoggweiler.cse5693.board.Move;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -29,4 +30,10 @@ public abstract class BasePlayer
         this.name = name;
     }
 
+    public static boolean areMatching(BasePlayer ... players)
+    {
+        if(players.length < 2) throw new IllegalArgumentException("Impossible to determine if players match with less than 2 players!");
+        if(Arrays.stream(players).anyMatch(player -> player == null))throw new NullPointerException("One or more players to match are null!");
+        return Arrays.stream(players).allMatch(p -> players[0].getId().equals(p.getId()));
+    }
 }
