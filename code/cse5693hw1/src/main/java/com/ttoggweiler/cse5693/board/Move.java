@@ -9,17 +9,16 @@ import java.util.UUID;
  * This class represents the data structure that will be passed into games/boards
  * that represent a players move for the Tick tack toe game
  */
-public class Move implements Comparator<Move>
+public class Move
 {
     private UUID id = UUID.randomUUID();
     private UUID gameId;
     private Long creationTime = System.currentTimeMillis(); // object createion
     private Long moveTime; // when the move was made in the game
-    private Long accepted; // if the move was accepted
+    private boolean accepted; // if the move was accepted
     private BasePlayer player; // the player making the move
     private int[] move; // the coordinates of the move
     private int gameMoveIndex = -1; // the order of the move for a given game
-    private int playerMoveIndex; // the order of the move for the given player
 
     public UUID getId()
     {
@@ -51,12 +50,12 @@ public class Move implements Comparator<Move>
         this.moveTime = moveTime;
     }
 
-    public Long wasAccepted()
+    public boolean wasAccepted()
     {
         return accepted;
     }
 
-    public void setAccepted(long accepted)
+    public void setAccepted(boolean accepted)
     {
         this.accepted = accepted;
     }
@@ -89,16 +88,6 @@ public class Move implements Comparator<Move>
     public void setGameMoveIndex(int gameMoveIndex)
     {
         this.gameMoveIndex = gameMoveIndex;
-    }
-
-    public int getPlayerMoveIndex()
-    {
-        return playerMoveIndex;
-    }
-
-    public void setPlayerMoveIndex(int playerMoveIndex)
-    {
-        this.playerMoveIndex = playerMoveIndex;
     }
 
 //    @Override

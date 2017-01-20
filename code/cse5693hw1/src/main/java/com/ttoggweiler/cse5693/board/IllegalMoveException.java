@@ -3,7 +3,7 @@ package com.ttoggweiler.cse5693.board;
 /**
  * Created by ttoggweiler on 1/14/17.
  */
-public class IllegalMoveException extends Exception
+public class IllegalMoveException extends RuntimeException
 {
     /**
      * Creates a new empty exception.
