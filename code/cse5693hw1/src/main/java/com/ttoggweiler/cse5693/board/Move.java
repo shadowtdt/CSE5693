@@ -15,7 +15,7 @@ public class Move
     private UUID gameId;
     private Long creationTime = System.currentTimeMillis(); // object createion
     private Long moveTime; // when the move was made in the game
-    private boolean accepted; // if the move was accepted
+    private boolean accepted = false; // if the move was accepted
     private BasePlayer player; // the player making the move
     private int[] move; // the coordinates of the move
     private int gameMoveIndex = -1; // the order of the move for a given game
@@ -30,7 +30,7 @@ public class Move
         return gameId;
     }
 
-    public void setGameId(UUID gameId)
+    void setGameId(UUID gameId)
     {
         this.gameId = gameId;
     }
@@ -45,7 +45,7 @@ public class Move
         return moveTime;
     }
 
-    public void setMoveTime(long moveTime)
+    void setMoveTime(long moveTime)
     {
         this.moveTime = moveTime;
     }
@@ -55,7 +55,7 @@ public class Move
         return accepted;
     }
 
-    public void setAccepted(boolean accepted)
+    void setAccepted(boolean accepted)
     {
         this.accepted = accepted;
     }
@@ -85,7 +85,7 @@ public class Move
         return gameMoveIndex;
     }
 
-    public void setGameMoveIndex(int gameMoveIndex)
+    void setGameMoveIndex(int gameMoveIndex)
     {
         this.gameMoveIndex = gameMoveIndex;
     }

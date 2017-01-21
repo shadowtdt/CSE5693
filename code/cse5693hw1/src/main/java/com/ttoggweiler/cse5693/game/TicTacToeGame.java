@@ -9,15 +9,28 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Created by ttoggweiler on 1/19/17.
+ * Manages the iteraction between player and board
+ * tracks the turn and determines winner
  */
-public class BaseGame
+public class TicTacToeGame
 {
     private UUID id = UUID.randomUUID();
 
     private List<Move> winningMoves = null;
     private boolean isMinMoveThresholdMet = false;
     private Board board;
+    private BasePlayer player1;
+    private BasePlayer player2;
+
+    public TicTacToeGame(int size, BasePlayer player1, BasePlayer player2)
+    {
+        board = new Board(3);
+    }
+
+    public TicTacToeGame(BasePlayer player1, BasePlayer player2)
+    {
+        new TicTacToeGame(3,player1,player2);
+    }
 
     /**
      * The Unique id for this game

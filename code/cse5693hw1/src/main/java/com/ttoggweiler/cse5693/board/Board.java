@@ -7,12 +7,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Abstract class that all tick-tack-toe boards will implement
- * This will allow for boards of any size or even possibility 3d boards
+ * Board for tick tack toe
+ * Supports any board size
+ * Tracks move history of players
+ * Many helper methods for getting board state information
  */
 public class Board
 {
@@ -30,10 +31,15 @@ public class Board
         INTERMEDIATE, // Some spaces available
     }
 
-    private BasePlayer[][] board = new BasePlayer[3][3];
+    private BasePlayer[][] board;
 
     private long creationTime = System.currentTimeMillis();
     private List<Move> moveHistory = new ArrayList<>();
+
+    public Board(int size)
+    {
+        board = createBoard(size);
+    }
 
     /**
      * The time in system milli when the board was created
@@ -103,6 +109,7 @@ public class Board
         try {
             validateMove(move);
         } catch (Exception e) {
+            move.setAccepted(false);
             return false;
         }
         return true;
