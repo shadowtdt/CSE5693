@@ -1,4 +1,4 @@
-package com.ttoggweiler.cse5693.board;
+package com.ttoggweiler.cse5693.TicTacToe.board;
 
 /**
  * Created by ttoggweiler on 1/14/17.

@@ -1,8 +1,7 @@
-package com.ttoggweiler.cse5693.board;
+package com.ttoggweiler.cse5693.TicTacToe.board;
 
-import com.ttoggweiler.cse5693.player.BasePlayer;
+import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 
-import java.util.Comparator;
 import java.util.UUID;
 
 /**
@@ -20,6 +19,12 @@ public class Move
     private int[] move; // the coordinates of the move
     private int gameMoveIndex = -1; // the order of the move for a given game
 
+    public Move(BasePlayer player, int row, int col)
+    {
+        if(player == null) throw new NullPointerException("Player of move cannot be mull");
+        this.player = player;
+        move = new int[]{row,col};
+    }
     public UUID getId()
     {
         return id;

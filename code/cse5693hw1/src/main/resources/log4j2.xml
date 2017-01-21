@@ -19,7 +19,7 @@
             <AppenderRef ref="gameTestLog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
+        <logger name="com.ttoggweiler.cse5693" level="warn" additivity="false">
             <AppenderRef ref="gameLog" />
             <AppenderRef ref="console" />
         </logger>

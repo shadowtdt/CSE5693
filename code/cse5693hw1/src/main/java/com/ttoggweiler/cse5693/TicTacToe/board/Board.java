@@ -1,12 +1,13 @@
-package com.ttoggweiler.cse5693.board;
+package com.ttoggweiler.cse5693.TicTacToe.board;
 
-import com.ttoggweiler.cse5693.player.BasePlayer;
+import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -31,23 +32,19 @@ public class Board
         INTERMEDIATE, // Some spaces available
     }
 
+    private UUID gameID; // ID of the game this board belongs to
     private BasePlayer[][] board;
-
-    private long creationTime = System.currentTimeMillis();
     private List<Move> moveHistory = new ArrayList<>();
 
-    public Board(int size)
+    public Board(UUID gameID, int size)
     {
         board = createBoard(size);
+        this.gameID = gameID;
     }
 
-    /**
-     * The time in system milli when the board was created
-     * @return milliseconds of the systemTime when board was created
-     */
-    public long getCreationTime()
+    public UUID getGameID()
     {
-        return creationTime;
+        return gameID;
     }
 
     /**
@@ -173,14 +170,14 @@ public class Board
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         List<Move> playerMoves = moveHistory.stream()
-                .filter(move -> move.getPlayer().getId().compareTo(player.getId()) == 0)
+                .filter(move -> move.getPlayer().equals(player))
                 .collect(Collectors.toList());
 
         if (playerMoves.isEmpty()) return Optional.empty();
         else return Optional.of(playerMoves.get(playerMoves.size() - 1));
     }
 
-    public Optional<Move> findMoveForCoodinates(int... coordinates)
+    public Optional<Move> findMoveForCoordinates(int... coordinates)
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         return moveHistory.stream()
@@ -197,7 +194,7 @@ public class Board
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         List<Move> playerMoves = moveHistory.stream()
-                .filter(move -> move.getPlayer().getId().compareTo(player.getId()) == 0)
+                .filter(move -> move.getPlayer().equals(player))
                 .collect(Collectors.toList());
 
         if (playerMoves.isEmpty()) return Optional.empty();
@@ -213,6 +210,9 @@ public class Board
      */
     public Optional<BasePlayer> findPlayer(int... coordinates)
     {
+        if (coordinates.length != 2)
+            throw new IllegalArgumentException("Invalid number of dimensions for coordinates " + Arrays.toString(coordinates));
+        isInBounds(coordinates[0], coordinates[1]);
         if (moveHistory.isEmpty()) return Optional.empty();
         return moveHistory.stream()
                 .filter(move -> Arrays.equals(move.getMove(), coordinates))
@@ -239,7 +239,7 @@ public class Board
         int colDelta = Math.abs(c0 - c1);
         boolean zeroDeltaExists = (rowDelta == 0 || colDelta == 0);
         // if both row and column have deltas, than the slope must be 1 for a straight line
-        if (!zeroDeltaExists && (rowDelta + 0.0f / colDelta) != 1.0)
+        if (!zeroDeltaExists && ((rowDelta + 0.0f) / colDelta) != 1.0)
             throw new IllegalArgumentException("Sequence is not a valid line");
 
         List<Move> moveSequence = new ArrayList<>();
@@ -248,10 +248,10 @@ public class Board
         int c = c0;
         //because slope must be one, the deltas wth be the same, rowDelta vs colDelta
         float sequenceLength = (zeroDeltaExists) ? (rowDelta + colDelta) : rowDelta;
-        for (int i = 0; i < sequenceLength; i++) {
-            Optional<Move> oMove = findMoveForCoodinates(r, c);
-            r = (r0 < r1) ? r + 1 : r - 1;// Move the index based on the slope
-            c = (c0 < c1) ? c + 1 : c - 1;
+        for (int i = 0; i <= sequenceLength; i++) {
+            Optional<Move> oMove = findMoveForCoordinates(r, c);
+            if(rowDelta != 0)r = (r0 < r1) ? r + 1 : r - 1;// Move the index based on the slope
+            if(colDelta != 0)c = (c0 < c1) ? c + 1 : c - 1;
 
             if (!oMove.isPresent())
                 return Optional.empty(); // Quick fail if space is not occupied
