@@ -75,9 +75,9 @@ public class Board
      */
     public BoardState getState()
     {
-        if(moveHistory.size() == 0)
+        if (moveHistory.size() == 0)
             return BoardState.EMPTY;
-        else if(moveHistory.size() == (board.length*board.length)) // switch must be constant
+        else if (moveHistory.size() == (board.length * board.length)) // switch must be constant
             return BoardState.FULL;
         else
             return BoardState.INTERMEDIATE;
@@ -87,14 +87,17 @@ public class Board
      * Returns a clone of the current board
      * @return Player[][] array of the current board state
      */
-    public BasePlayer[][] getCurrentBoard(){return board.clone();}
+    public BasePlayer[][] getCurrentBoard()
+    {
+        return board.clone();
+    }
 
     /**
      * Determines of the space at the coordinates is currently occupied
      * @param coordinates row and column of space to check
      * @return true is the space is occupied, false otherwise
      */
-    public boolean isOccupied(int ... coordinates)
+    public boolean isOccupied(int... coordinates)
     {
         return findPlayer(coordinates).isPresent();
     }
@@ -173,7 +176,7 @@ public class Board
                 .filter(move -> move.getPlayer().getId().compareTo(player.getId()) == 0)
                 .collect(Collectors.toList());
 
-        if(playerMoves.isEmpty())return Optional.empty();
+        if (playerMoves.isEmpty()) return Optional.empty();
         else return Optional.of(playerMoves.get(playerMoves.size() - 1));
     }
 
@@ -181,7 +184,7 @@ public class Board
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         return moveHistory.stream()
-                .filter(move -> Arrays.equals(move.getMove(),coordinates))
+                .filter(move -> Arrays.equals(move.getMove(), coordinates))
                 .findAny();
     }
 
@@ -197,8 +200,10 @@ public class Board
                 .filter(move -> move.getPlayer().getId().compareTo(player.getId()) == 0)
                 .collect(Collectors.toList());
 
-        if(playerMoves.isEmpty())return Optional.empty();
-        else {return Optional.of(playerMoves);}
+        if (playerMoves.isEmpty()) return Optional.empty();
+        else {
+            return Optional.of(playerMoves);
+        }
     }
 
     /**
@@ -206,11 +211,11 @@ public class Board
      * @param coordinates row and column where to look for player
      * @return if occupied, player occupant, empty optional otherwise
      */
-    public Optional<BasePlayer> findPlayer(int ... coordinates)
+    public Optional<BasePlayer> findPlayer(int... coordinates)
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         return moveHistory.stream()
-                .filter(move -> Arrays.equals(move.getMove(),coordinates))
+                .filter(move -> Arrays.equals(move.getMove(), coordinates))
                 .findAny()
                 .map(Move::getPlayer);
     }
@@ -227,14 +232,14 @@ public class Board
     public Optional<List<Move>> findMatchingSequence(int r0, int c0, int r1, int c1)
     {
         //Check if coordinates are in the bounds of the board
-        isInBounds(r0,c0);
-        isInBounds(r1,c1);
+        isInBounds(r0, c0);
+        isInBounds(r1, c1);
 
         int rowDelta = Math.abs(r0 - r1);
         int colDelta = Math.abs(c0 - c1);
         boolean zeroDeltaExists = (rowDelta == 0 || colDelta == 0);
         // if both row and column have deltas, than the slope must be 1 for a straight line
-        if(!zeroDeltaExists && (rowDelta + 0.0f / colDelta) != 1.0)
+        if (!zeroDeltaExists && (rowDelta + 0.0f / colDelta) != 1.0)
             throw new IllegalArgumentException("Sequence is not a valid line");
 
         List<Move> moveSequence = new ArrayList<>();
@@ -242,21 +247,21 @@ public class Board
         int r = r0;
         int c = c0;
         //because slope must be one, the deltas wth be the same, rowDelta vs colDelta
-        float sequenceLength = (zeroDeltaExists)? (rowDelta+colDelta) : rowDelta;
-        for(int i = 0; i < sequenceLength; i++){
-            Optional<Move> oMove = findMoveForCoodinates(r,c);
-            r = (r0 < r1)? r+1 : r-1;// Move the index based on the slope
-            c = (c0 < c1)? c+1 : c-1;
+        float sequenceLength = (zeroDeltaExists) ? (rowDelta + colDelta) : rowDelta;
+        for (int i = 0; i < sequenceLength; i++) {
+            Optional<Move> oMove = findMoveForCoodinates(r, c);
+            r = (r0 < r1) ? r + 1 : r - 1;// Move the index based on the slope
+            c = (c0 < c1) ? c + 1 : c - 1;
 
-            if(!oMove.isPresent())
+            if (!oMove.isPresent())
                 return Optional.empty(); // Quick fail if space is not occupied
             else if (playerToMatch == null)
                 playerToMatch = oMove.get().getPlayer(); // init player to match sequence
-            else if (! BasePlayer.areMatching(playerToMatch,oMove.get().getPlayer()))
+            else if (!BasePlayer.areMatching(playerToMatch, oMove.get().getPlayer()))
                 return Optional.empty();// Quick fail on miss matched players
             else moveSequence.add(oMove.get()); // occupied && matching, add to sequence
         }
-        moveSequence.sort(Comparator.comparingInt((Move :: getGameMoveIndex))); // sort based on the move index
+        moveSequence.sort(Comparator.comparingInt((Move::getGameMoveIndex))); // sort based on the move index
         return Optional.of(moveSequence);
     }
 
@@ -267,11 +272,14 @@ public class Board
      */
     private void validateMove(Move move)
     {
-        if(getState().equals(BoardState.FULL))throw new IllegalMoveException("Board is in a FULL state, no more moves may be played");
-        if(isOccupied(move.getMove()))throw new IllegalMoveException(Arrays.toString(move.getMove())+" space is already occupied");
-        if(move.getPlayer() == null) throw new NullPointerException("A player value must set when making a move");
-        if(move.getMove().length > 2) throw new IllegalArgumentException("A moves coordinates must only contain a row and column when making a move");
-        isInBounds(move.getMove()[0],move.getMove()[1]);
+        if (getState().equals(BoardState.FULL))
+            throw new IllegalMoveException("Board is in a FULL state, no more moves may be played");
+        if (isOccupied(move.getMove()))
+            throw new IllegalMoveException(Arrays.toString(move.getMove()) + " space is already occupied");
+        if (move.getPlayer() == null) throw new NullPointerException("A player value must set when making a move");
+        if (move.getMove().length > 2)
+            throw new IllegalArgumentException("A moves coordinates must only contain a row and column when making a move");
+        isInBounds(move.getMove()[0], move.getMove()[1]);
     }
 
     /**
@@ -282,8 +290,8 @@ public class Board
      */
     private void isInBounds(int row, int col) throws IndexOutOfBoundsException
     {
-        if(row < 0 || row > board.length-1 || col < 0 || col > board.length-1 )
-            throw new IndexOutOfBoundsException("(" + row + "," +col+") is not in the boards bounds");
+        if (row < 0 || row > board.length - 1 || col < 0 || col > board.length - 1)
+            throw new IndexOutOfBoundsException("(" + row + "," + col + ") is not in the boards bounds");
     }
 
     /**
@@ -293,9 +301,9 @@ public class Board
      */
     private static BasePlayer[][] createBoard(int size)
     {
-        if(size < 3 ) throw new IllegalArgumentException("Board size has a minimum value of 3");
+        if (size < 3) throw new IllegalArgumentException("Board size has a minimum value of 3");
         BasePlayer[][] newBoard = new BasePlayer[size][size];
-        for(int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
                 newBoard[i][j] = null;
         return newBoard;

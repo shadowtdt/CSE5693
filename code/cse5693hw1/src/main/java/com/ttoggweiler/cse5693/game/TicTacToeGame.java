@@ -4,9 +4,11 @@ import com.ttoggweiler.cse5693.board.Board;
 import com.ttoggweiler.cse5693.board.Move;
 import com.ttoggweiler.cse5693.player.BasePlayer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * Manages the iteraction between player and board
@@ -24,12 +26,13 @@ public class TicTacToeGame
 
     public TicTacToeGame(int size, BasePlayer player1, BasePlayer player2)
     {
+        validatePlayers(player1, player2);
         board = new Board(3);
     }
 
     public TicTacToeGame(BasePlayer player1, BasePlayer player2)
     {
-        new TicTacToeGame(3,player1,player2);
+        new TicTacToeGame(3, player1, player2);
     }
 
     /**
@@ -41,6 +44,15 @@ public class TicTacToeGame
         return id;
     }
 
+    /**
+     * Gets the current board
+     * @return the game board
+     */
+    public Board getBoard()
+    {
+        return this.board;
+    }
+
     void submitMove(Move move)
     {
         findWinner();
@@ -48,15 +60,15 @@ public class TicTacToeGame
 
     public Optional<BasePlayer> findWinner()
     {
-        if(winningMoves != null && winningMoves.size() == board.size())
-            return Optional.of(winningMoves.get(0).getPlayer());
+        if (winningMoves != null && winningMoves.size() == board.size())
+            return Optional.of(winningMoves.get(0).getPlayer()); // Known winner
 
-        if(!checkMinMoveThreshold())return Optional.empty(); // Not enough moves for there to be a winner
+        if (!checkMinMoveThreshold()) return Optional.empty(); // Not enough moves for there to be a winner
 
-        //Reduce search space by only checking the previous moves effected row/col/diagonal
-        if(!checkLastMoveDiagonal())
-            if(!checkLastMoveHorizontal())
-                if(!checkLastMoveVertical())
+        //Reduce search space by only checking the previous move's effected row/col/diagonal
+        if (!checkLastMoveHorizontal())
+            if (!checkLastMoveDiagonal())
+                if (!checkLastMoveVertical())
                     return Optional.empty(); // if all checks fail there is no winner
 
         return Optional.of(winningMoves.get(0).getPlayer()); // there must be a winner to get here
@@ -85,7 +97,7 @@ public class TicTacToeGame
         Move lastMove = board.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Horizontal check should always be preceded by the Min-Move-Threshold check."));
         int row = lastMove.getMove()[0];
-        board.findMatchingSequence(row,0, row,board.size()).ifPresent(moves -> winningMoves = moves);
+        board.findMatchingSequence(row, 0, row, board.size()).ifPresent(moves -> winningMoves = moves);
         return winningMoves != null;
     }
 
@@ -98,7 +110,7 @@ public class TicTacToeGame
         Move lastMove = board.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Vertical check should always be preceded by the Min-Move-Threshold check."));
         int col = lastMove.getMove()[1];
-        board.findMatchingSequence(0,col,board.size(),col).ifPresent(moves -> winningMoves = moves);
+        board.findMatchingSequence(0, col, board.size(), col).ifPresent(moves -> winningMoves = moves);
         return winningMoves != null;
     }
 
@@ -114,11 +126,24 @@ public class TicTacToeGame
         int col = lastMove.getMove()[1];
 
         // Quick fail if the last move was not on a diagonal
-        if(col-row == 0) // 0,0 -> N,N diagonal
-            board.findMatchingSequence(0,0,board.size(),board.size()).ifPresent(moves -> winningMoves = moves);
-        else if(row+col == board.size()) // 0,N -> N,0 diagonal
-            board.findMatchingSequence(0,board.size(),board.size(),0).ifPresent(moves -> winningMoves = moves);
+        if (col - row == 0) // 0,0 -> N,N diagonal
+            board.findMatchingSequence(0, 0, board.size(), board.size()).ifPresent(moves -> winningMoves = moves);
+        else if (row + col == board.size()) // 0,N -> N,0 diagonal
+            board.findMatchingSequence(0, board.size(), board.size(), 0).ifPresent(moves -> winningMoves = moves);
 
         return winningMoves != null;
     }
+
+    /**
+     * Checks for null values and sets names for those players who do not have one set
+     * @param players the players to validate
+     */
+    private void validatePlayers(BasePlayer... players)
+    {
+        for (BasePlayer player : players) {
+            if (player == null) throw new NullPointerException("One or more of the provided players is null");
+            if (player.getName() == null || player.getName().isEmpty()) player.setName(UUID.randomUUID().toString());
+        }
+    }
+
 }
