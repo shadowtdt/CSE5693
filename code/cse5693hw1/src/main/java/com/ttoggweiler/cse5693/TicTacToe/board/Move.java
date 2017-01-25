@@ -19,6 +19,11 @@ public class Move
     private int[] move; // the coordinates of the move
     private int gameMoveIndex = -1; // the order of the move for a given game
 
+    Move(int row, int col)
+    {
+        move = new int[]{row,col};
+    }
+
     public Move(BasePlayer player, int row, int col)
     {
         if(player == null) throw new NullPointerException("Player of move cannot be mull");

@@ -1,6 +1,7 @@
 package com.ttoggweiler.cse5693.TicTacToe.board;
 
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -263,6 +264,12 @@ public class Board
         }
         moveSequence.sort(Comparator.comparingInt((Move::getGameMoveIndex))); // sort based on the move index
         return Optional.of(moveSequence);
+    }
+
+    public String toString()
+    {
+        //// TODO: ttoggweiler 1/24/17 convert board to string value
+        throw new NotImplementedException();
     }
 
     /**
