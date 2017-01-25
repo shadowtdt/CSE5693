@@ -271,7 +271,7 @@ public class Board
         BasePlayer x = findMoveForIndex(0)
                 .map(Move :: getPlayer).orElse(null);
 
-        String boardStr = "\n\n";
+        String boardStr = "\n";
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++) {
                 boardStr += (j > 0) ? "| " : "";
@@ -279,7 +279,11 @@ public class Board
                     boardStr += (findPlayer(i, j).get().equals(x)) ? "X " : "O ";
                 else boardStr += "  ";
             }
-            if (i != size() - 1) boardStr += "\n----------\n";
+            if (i != size() - 1) {
+                boardStr += "\n---";
+                for(int k = 1; k < board.length; k++)boardStr +="----";
+            }
+            boardStr += "\n";
         }
         return boardStr;
     }

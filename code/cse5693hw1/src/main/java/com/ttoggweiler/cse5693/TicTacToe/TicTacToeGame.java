@@ -69,12 +69,6 @@ public class TicTacToeGame
                 rotatePlayers();
             }
         }
-        // TODO: ttoggweiler 1/21/17
-        //this(size,player1,player2);
-        // play moves
-        // start normal game
-
-        throw new NullPointerException("This constructor has not been implemented yet");
     }
 
     /**

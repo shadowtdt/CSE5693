@@ -13,6 +13,7 @@ import java.util.UUID;
 /**
  * This player gets input from the user through terminal prompts
  */
+// TODO: ttoggweiler 1/25/17 added terminal input for names
 public class CommandLinePlayer extends BasePlayer
 {
     private static final Logger log = LoggerFactory.getLogger(CommandLinePlayer.class);
