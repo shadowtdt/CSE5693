@@ -25,6 +25,7 @@ public class TicTacToeGame
     private List<Move> winningMoves = null;
     private boolean isMinMoveThresholdMet = false;
     private boolean gameStarted = false;
+    private boolean gameEnded = false;
 
     private Board board;
     private BasePlayer player1;
@@ -34,7 +35,7 @@ public class TicTacToeGame
     /**
      * Creates a tic tac toe game for the give size with the given players
      * Constructs a board of dimensions size X size
-     * Calls, {@link BasePlayer#getNextMove(Board)} on the players on their turn
+     * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
      * @param size dimensions of the game board
      * @param player1 starting player
      * @param player2 player who goes second
@@ -51,7 +52,7 @@ public class TicTacToeGame
     /**
      * Creates a tic tac toe game for the give size with the given players, and initializes with the given Move array
      * Constructs a board of dimensions size X size
-     * Calls, {@link BasePlayer#getNextMove(Board)} on the players on their turn
+     * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
      * @param size dimensions of the game board
      * @param player1 starting player
      * @param player2 player who goes second
@@ -59,16 +60,26 @@ public class TicTacToeGame
      */
     public TicTacToeGame(int size, BasePlayer player1, BasePlayer player2, Move... initMoves)
     {
+        this(size,player1,player2);
+        if(initMoves != null)
+        {
+            for(Move m : initMoves){
+                m.setPlayer(currentTurn);
+                board.makeMove(m);
+                rotatePlayers();
+            }
+        }
         // TODO: ttoggweiler 1/21/17
         //this(size,player1,player2);
         // play moves
         // start normal game
+
         throw new NullPointerException("This constructor has not been implemented yet");
     }
 
     /**
      * Creates a traditional tic tac toe game with a 3x3 board and the given players
-     * Calls, {@link BasePlayer#getNextMove(Board)} on the players on their turn
+     * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
      * @param player1 starting player
      * @param player2 player who goes second
      */
@@ -151,18 +162,27 @@ public class TicTacToeGame
 
         log.info("** Starting TicTacToe game **");
         log.info("Game ID: {}", id.toString());
-        log.info("Player1: {}", player1.getName());
-        log.info("Player2: {}", player2.getName());
+        log.info("Player1 (X): {}", player1.getName());
+        log.info("Player2 (O): {}", player2.getName());
+        if(board.getCurrentMoveIndex() != 0) {
+            log.info("Loaded {} moves.", board.getCurrentMoveIndex()+1);
+            log.info(board.getPrettyBoardString());
+        }
+        player1.gameStart(this);
+        player2.gameStart(this);
         while (!findWinner().isPresent() && !board.getState().equals(Board.BoardState.FULL)) // while no winner and non-full board
         {
             try {
                 // assert previous and current turn are not the same player
                 if (board.findLastMove().isPresent()) assert board.findLastMove().get().getPlayer() != currentTurn;
-                Move nextMove = currentTurn.getNextMove(this.board);
+
+                Move nextMove = currentTurn.getNextMove(getId());
+                if(gameEnded)break; // Check to see if game ended while waiting for move
+
                 log.debug("{} making move {}", nextMove.getPlayer().getName(), Arrays.toString(nextMove.getMove()));
                 board.makeMove(nextMove);
-                log.debug(getBoardString());
-                currentTurn = (currentTurn == player1) ? player2 : player1; // rotate players
+                log.debug(board.getPrettyBoardString());
+                rotatePlayers();
             } catch (Exception e) {
                 log.error(currentTurn.getName() + "'s last move was invalid, repeating turn.", e);
             }
@@ -170,15 +190,32 @@ public class TicTacToeGame
         endGame();
     }
 
+    public void quit()
+    {
+        log.info("** Quiting TicTacToe game **");
+        endGame();
+    }
+
     private void endGame()
     {
-        log.info("** Ending TicTacToe game **");
+        if(gameEnded)return;
+        log.info("** TicTacToe game end **");
         log.info("Game ID: {}", id.toString());
+        log.info(board.getPrettyBoardString());
+        BasePlayer winner = null;
         if (winningMoves != null) {
-            log.info("Winner: {}", winningMoves.get(0).getPlayer().getName());
+            winner = winningMoves.get(0).getPlayer();
+            log.info("Winner: {}", winner.getName());
         } else if (board.getState().equals(Board.BoardState.FULL)) {
             log.info("Tie between players {} and {}", player1.getName(), player2.getName());
-        } else assert false;
+        } else
+        {
+            log.info("Premature game ending.");
+        }
+
+        player1.gameEnded(this.getId(),winner == player1);
+        player2.gameEnded(this.getId(),winner == player2);
+        gameEnded = true;
     }
     /* victory checking */
 
@@ -241,21 +278,6 @@ public class TicTacToeGame
         return winningMoves != null;
     }
 
-    private String getBoardString()
-    {
-        String boardStr = "\n\n";
-        for (int i = 0; i <= this.board.size() - 1; i++) {
-            for (int j = 0; j <= this.board.size() - 1; j++) {
-                boardStr += (j > 0) ? "| " : "";
-                if (board.findPlayer(i, j).isPresent())
-                    boardStr += (board.findPlayer(i, j).get().equals(player1)) ? "O " : "X ";
-                else boardStr += "  ";
-            }
-            if (i != this.board.size() - 1) boardStr += "\n----------\n";
-        }
-        return boardStr;
-    }
-
     /**
      * Checks for null values and sets names for those players who do not have one set
      * @param players the players to validate
@@ -265,6 +287,12 @@ public class TicTacToeGame
         for (BasePlayer player : players) {
             if (player == null) throw new NullPointerException("One or more of the provided players is null");
         }
+    }
+
+    private BasePlayer rotatePlayers()
+    {
+        currentTurn = (currentTurn == player1) ? player2 : player1; // rotate players
+        return currentTurn;
     }
 
 }

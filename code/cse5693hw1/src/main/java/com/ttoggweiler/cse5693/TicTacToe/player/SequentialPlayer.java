@@ -12,19 +12,19 @@ import java.util.UUID;
 public class SequentialPlayer extends BasePlayer
 {
     @Override
-    public Move getNextMove(Board board)
+    public Move getNextMove(UUID gameId)
     {
-        return nextSequentialMove(this, board);
+        return nextSequentialMove(this, getGame(gameId).getBoard());
     }
 
     @Override
-    public void gameStart(TicTacToeGame game)
+    public void gameStarted(TicTacToeGame game)
     {
 
     }
 
     @Override
-    public void gameEnd(UUID gameId, boolean winner)
+    public void gameEnded(UUID gameId, boolean winner)
     {
 
     }

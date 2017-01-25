@@ -266,6 +266,24 @@ public class Board
         return Optional.of(moveSequence);
     }
 
+    public String getPrettyBoardString()
+    {
+        BasePlayer x = findMoveForIndex(0)
+                .map(Move :: getPlayer).orElse(null);
+
+        String boardStr = "\n\n";
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board.length; j++) {
+                boardStr += (j > 0) ? "| " : "";
+                if (findPlayer(i, j).isPresent())
+                    boardStr += (findPlayer(i, j).get().equals(x)) ? "X " : "O ";
+                else boardStr += "  ";
+            }
+            if (i != size() - 1) boardStr += "\n----------\n";
+        }
+        return boardStr;
+    }
+
     public String toString()
     {
         //// TODO: ttoggweiler 1/24/17 convert board to string value

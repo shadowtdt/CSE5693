@@ -2,6 +2,7 @@ package com.ttoggweiler.cse5693;
 
 import com.ttoggweiler.cse5693.TicTacToe.TicTacToeGame;
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
+import com.ttoggweiler.cse5693.TicTacToe.player.CommandLinePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.RandomPlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.SequentialPlayer;
 import org.slf4j.Logger;
@@ -20,20 +21,28 @@ public class TTTGameRunner
     {
         log.info("==== Tic-Tac-Toe Game Runner ====");
 
+        randomVsSequential(3);
+
+
+
+    }
+
+    public static BasePlayer randomVsSequential(int iterations)
+    {
         BasePlayer p1 = new RandomPlayer();
-        BasePlayer p2 = new SequentialPlayer();
-        BasePlayer tie = new RandomPlayer();
+        BasePlayer p2 = new CommandLinePlayer();
+        BasePlayer tie = new CommandLinePlayer();
 
         tie.setName("Tie");
         p1.setName("Rand");
-        p2.setName("Sequ");
+        p2.setName("CLP");
 
         HashMap<String, Integer> scoreChart = new HashMap<>();
         scoreChart.put(p1.getName(), 0);
         scoreChart.put(p2.getName(), 0);
         scoreChart.put(tie.getName(), 0);
         int games = 0;
-        while (true) {
+        for (int i = 0; i < iterations; i++) {
             TicTacToeGame game = new TicTacToeGame(3, p1, p2);
             game.start();
             games++;
@@ -48,6 +57,7 @@ public class TTTGameRunner
 //                log.error("Sleep between games was interrupted", e);
 //            }
         }
+        return (scoreChart.get(p1.getName()) > scoreChart.get(p2.getName()))? p1 : p2;
     }
 
 

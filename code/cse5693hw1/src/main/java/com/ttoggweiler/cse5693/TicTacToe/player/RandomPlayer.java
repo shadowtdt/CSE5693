@@ -15,22 +15,23 @@ import java.util.stream.IntStream;
 public class RandomPlayer extends BasePlayer
 {
     @Override
-    public Move getNextMove(Board board)
+    public Move getNextMove(UUID gameId)
     {
-        return randomMove(this, board);
+        return randomMove(this, getGame(gameId).getBoard());
     }
 
     @Override
-    public void gameStart(TicTacToeGame game)
+    public void gameStarted(TicTacToeGame game)
     {
 
     }
 
     @Override
-    public void gameEnd(UUID gameId, boolean winner)
+    public void gameEnded(UUID gameId, boolean winner)
     {
 
     }
+
     public static Move randomMove(BasePlayer player, Board board)
     {
         IntStream ints = new Random().ints(0, board.size());

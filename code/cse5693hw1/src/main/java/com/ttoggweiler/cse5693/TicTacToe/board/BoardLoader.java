@@ -85,11 +85,11 @@ public class BoardLoader
             String[] coordinates = moves[i].split(":");
             if (coordinates.length != 2)
                 throw new IllegalArgumentException("Incorrect number of coordinates found in: " + moveArrayString);
-            int xCoord = Integer.parseInt(coordinates[0].trim());
-            int yCoord = Integer.parseInt(coordinates[1].trim());
-            if (xCoord > maxValue) maxValue = xCoord;
-            if (yCoord > maxValue) maxValue = yCoord;
-            parsedMoves[i] = new Move(xCoord, yCoord);
+            int rCoord = Integer.parseInt(coordinates[0].trim());
+            int cCoord = Integer.parseInt(coordinates[1].trim());
+            if (rCoord > maxValue) maxValue = rCoord;
+            if (cCoord > maxValue) maxValue = cCoord;
+            parsedMoves[i] = new Move(rCoord, cCoord);
         }
         if (moves.length > (++maxValue * 2))
             throw new IllegalArgumentException("More moves that spaces detected in: " + moveArrayString);
