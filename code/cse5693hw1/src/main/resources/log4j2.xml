@@ -12,14 +12,14 @@
         </File>
     </Appenders>
     <Loggers>
-        <Root level="error">
+        <Root level="warn">
             <AppenderRef ref="console"/>
         </Root>
         <logger name="com.ttoggweiler.cse5693.test" level="debug" additivity="false">
             <AppenderRef ref="gameTestLog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693" level="warn" additivity="false">
+        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
             <AppenderRef ref="gameLog" />
             <AppenderRef ref="console" />
         </logger>

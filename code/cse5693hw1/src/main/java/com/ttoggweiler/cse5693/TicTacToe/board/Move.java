@@ -100,6 +100,10 @@ public class Move
         this.gameMoveIndex = gameMoveIndex;
     }
 
+    public String toString()
+    {
+        return "("+move[0]+","+move[1]+")";
+    }
 //    @Override
 //    public int compare(Move o1, Move o2)
 //    {
