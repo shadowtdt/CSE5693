@@ -286,7 +286,10 @@ public class TicTacToeGame
 
     private BasePlayer rotatePlayers()
     {
-        currentTurn = (currentTurn == player1) ? player2 : player1; // rotate players
+        if(currentTurn == null)currentTurn = player1; // if null assume it is player1's turn
+        else board.findLastMove().ifPresent(m -> // get last move
+                currentTurn = (m.getPlayer().getId().equals(player1.getId())? // compare previous move with player1 id
+                        player2:player1));// it matching, player2's turn, else it is player1's
         return currentTurn;
     }
 

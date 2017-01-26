@@ -26,8 +26,8 @@ public class TTTGameRunner
     {
         log.info("==== Tic-Tac-Toe Game Runner ====");
 
-        randomVsSequential(3,100,null);
-        //humanVsHuman(3,1,null);
+        //randomVsSequential(3,100,null);
+        humanVsHuman(3,1,null);
     }
 
     public static BasePlayer playGames(BasePlayer player1, BasePlayer player2, int boardSize, int iterations, Set<Move[]> initMoves)
