@@ -5,21 +5,29 @@ import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Scanner;
 import java.util.UUID;
 
 /**
  * This player gets input from the user through terminal prompts
  */
-// TODO: ttoggweiler 1/25/17 added terminal input for names
 public class CommandLinePlayer extends BasePlayer
 {
+
     private static final Logger log = LoggerFactory.getLogger(CommandLinePlayer.class);
 
     private Scanner keyboard = new Scanner(System.in);
 
+    public CommandLinePlayer()
+    {
+        this(null);
+    }
+
+    public CommandLinePlayer(String name)
+    {
+        if(name == null || name.isEmpty()) name = getNameFromUser();
+        this.setName(name);
+    }
 
     @Override
     public Move getNextMove(UUID gameId)
@@ -40,12 +48,22 @@ public class CommandLinePlayer extends BasePlayer
 
     }
 
+    private String getNameFromUser()
+    {
+        while(true)
+        {
+            log.info("Please provide player name:");
+            String input = keyboard.nextLine();
+            if (input == null || input.trim().isEmpty()) continue;
+            return input;
+        }
+    }
+
     private Move getMoveFromUser(TicTacToeGame game)
     {
         boolean valid = false;
         Move m = null;
         while (!valid) {
-
             log.info("Player {} turn, input next move:", getName());
             String input = keyboard.nextLine();
             if (input == null || input.trim().isEmpty()) continue;
@@ -57,6 +75,11 @@ public class CommandLinePlayer extends BasePlayer
                 int cCoord = Integer.parseInt(coords[1].trim());
                 m = new Move(this,rCoord,cCoord);
                 valid = game.getBoard().isMoveValid(m);
+
+                if(!valid)
+                {
+                    log.warn("Invalid move: {}",m.getRejectionCause().toString());
+                }
             } else {
                 switch (input.trim().toLowerCase()) {
                     case "print":
@@ -71,6 +94,10 @@ public class CommandLinePlayer extends BasePlayer
                     case "h":
                         printCmds();
                         break;
+                    default:
+                        log.warn("Unknown command received");
+                        printCmds();
+                        break;
                 }
             }
         }
@@ -79,8 +106,8 @@ public class CommandLinePlayer extends BasePlayer
 
     private static void printCmds()
     {
-        log.info("====== Commands ======");
-        log.info("Move:        x,y");
+        log.info("======== Commands ========");
+        log.info("Move:        row,col (0,2)");
         log.info("Quit game:   quit (q)");
         log.info("Print board: print (p)");
         log.info("help:        help (h)");

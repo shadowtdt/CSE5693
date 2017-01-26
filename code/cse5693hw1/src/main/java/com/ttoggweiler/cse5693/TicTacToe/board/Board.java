@@ -111,6 +111,7 @@ public class Board
             validateMove(move);
         } catch (Exception e) {
             move.setAccepted(false);
+            move.setRejectionCause(e);
             return false;
         }
         return true;

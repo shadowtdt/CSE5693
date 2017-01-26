@@ -175,6 +175,7 @@ public class TicTacToeGame
 
                 log.debug("{} making move {}", nextMove.getPlayer().getName(), Arrays.toString(nextMove.getMove()));
                 board.makeMove(nextMove);
+                if(!nextMove.wasAccepted())log.error("Invalid move submitted");
                 log.debug(board.getPrettyBoardString());
                 rotatePlayers();
             } catch (Exception e) {

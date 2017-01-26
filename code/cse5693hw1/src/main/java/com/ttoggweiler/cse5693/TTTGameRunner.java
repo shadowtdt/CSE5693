@@ -10,7 +10,6 @@ import com.ttoggweiler.cse5693.TicTacToe.player.SequentialPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,11 +26,8 @@ public class TTTGameRunner
     {
         log.info("==== Tic-Tac-Toe Game Runner ====");
 
-        randomVsSequential(3,1,null);
-        humanVsHuman(7,1,null);
-
-//todo invalid moves for human player get notified
-
+        randomVsSequential(3,100,null);
+        //humanVsHuman(3,1,null);
     }
 
     public static BasePlayer playGames(BasePlayer player1, BasePlayer player2, int boardSize, int iterations, Set<Move[]> initMoves)
@@ -57,11 +53,10 @@ public class TTTGameRunner
             String result = game.findWinner().orElse(tie).getName();
             int score = scoreChart.get(result);
             scoreChart.put(result,++score);
-            log.warn("Game {} Stats {}:",game.getId(), scoreChart.toString());
+            log.warn("Game {} Stats {}:",i, scoreChart.toString());
         }
         return (scoreChart.get(player1.getName()) > scoreChart.get(player2.getName()))? player1 : player2;
     }
-
 
     public static BasePlayer randomVsSequential(int boardSize, int iterations, Set<Move[]> initMoves)
     {
@@ -78,10 +73,6 @@ public class TTTGameRunner
     {
         BasePlayer p1 = new CommandLinePlayer();
         BasePlayer p2 = new CommandLinePlayer();
-
-        p1.setName("p1");
-        p2.setName("p2");
-
         return playGames(p1,p2,boardSize,iterations,null);
     }
 
