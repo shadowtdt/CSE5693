@@ -149,7 +149,7 @@ public class TicTacToeGame
         return Optional.of(winningMoves.get(0).getPlayer()); // there must be a winner to get here
     }
 
-    public void start()
+    public void startGame()
     {
         assert !gameStarted;
         gameStarted = true;
@@ -185,7 +185,7 @@ public class TicTacToeGame
         endGame();
     }
 
-    public void quit()
+    public void quitGame()
     {
         log.info("** Quiting TicTacToe game **");
         endGame();

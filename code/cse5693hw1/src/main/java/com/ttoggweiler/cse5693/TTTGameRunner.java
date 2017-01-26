@@ -1,7 +1,6 @@
 package com.ttoggweiler.cse5693;
 
 import com.ttoggweiler.cse5693.TicTacToe.TicTacToeGame;
-import com.ttoggweiler.cse5693.TicTacToe.board.BoardLoader;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.CommandLinePlayer;
@@ -48,7 +47,7 @@ public class TTTGameRunner
         for (int i = 0; i < iterations; i++) {
             Move[] initMove = (initItr.hasNext())?initItr.next():null;
             TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2,initMove);
-            game.start();
+            game.startGame();
 
             String result = game.findWinner().orElse(tie).getName();
             int score = scoreChart.get(result);

@@ -88,7 +88,7 @@ public class CommandLinePlayer extends BasePlayer
                         break;
                     case "quit":
                     case "q":
-                        game.quit();
+                        game.quitGame();
                         valid = true;
                     case "help":
                     case "h":
