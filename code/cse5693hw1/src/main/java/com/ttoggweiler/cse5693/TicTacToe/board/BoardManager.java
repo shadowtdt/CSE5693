@@ -187,7 +187,8 @@ public class BoardManager
      */
     public void isInBounds(int row, int col) throws IndexOutOfBoundsException
     {
-        if (row < 0 || row > board.length - 1 || col < 0 || col > board.length - 1)
+        if (row < 0 || row > board.length - 1
+                || col < 0 || col > board.length - 1)
             throw new IndexOutOfBoundsException("(" + row + "," + col + ") is not in the boards bounds");
     }
 
