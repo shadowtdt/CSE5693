@@ -228,10 +228,11 @@ public class Board
      * @param c0 Starting column
      * @param r1 Ending row
      * @param c1 Ending column
+     * @param allowEmpty allow empty spaces in sequences
      * @return MoveIndex sorted list of moves that make up a matching sequence, empty optional otherwise
      *
      */
-    public Optional<List<Move>> findMatchingSequence(int r0, int c0, int r1, int c1)
+    public Optional<List<Move>> findMatchingInSequence(int r0, int c0, int r1, int c1, boolean allowEmpty)
     {
         //Check if coordinates are in the bounds of the board
         isInBounds(r0, c0);
@@ -256,7 +257,8 @@ public class Board
             if(colDelta != 0)c = (c0 < c1) ? c + 1 : c - 1;
 
             if (!oMove.isPresent())
-                return Optional.empty(); // Quick fail if space is not occupied
+                if(allowEmpty)break; // allow unoccupied spaces
+                else return Optional.empty(); // Quick fail if space is not occupied
             else if (playerToMatch == null)
                 playerToMatch = oMove.get().getPlayer(); // init player to match sequence
             else if (!BasePlayer.areMatching(playerToMatch, oMove.get().getPlayer()))

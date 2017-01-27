@@ -235,7 +235,8 @@ public class TicTacToeGame
         Move lastMove = board.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Horizontal check should always be preceded by the Min-Move-Threshold check."));
         int row = lastMove.getMove()[0];
-        board.findMatchingSequence(row, 0, row, board.size() - 1).ifPresent(moves -> winningMoves = moves);
+        board.findMatchingInSequence(row, 0, row, board.size() - 1,false)
+                .ifPresent(moves -> winningMoves = moves);
         return winningMoves != null;
     }
 
@@ -248,7 +249,8 @@ public class TicTacToeGame
         Move lastMove = board.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Vertical check should always be preceded by the Min-Move-Threshold check."));
         int col = lastMove.getMove()[1];
-        board.findMatchingSequence(0, col, board.size() - 1, col).ifPresent(moves -> winningMoves = moves);
+        board.findMatchingInSequence(0, col, board.size() - 1, col,false)
+                .ifPresent(moves -> winningMoves = moves);
         return winningMoves != null;
     }
 
@@ -264,11 +266,12 @@ public class TicTacToeGame
         int col = lastMove.getMove()[1];
 
         // Quick fail if the last move was not on a diagonal
-        if (col - row == 0 || row + col == board.size() - 1) // 0,N -> N,0 diagonal ||  0,0 -> N,N diagonal
-        {
-            board.findMatchingSequence(0, 0, board.size() - 1, board.size() - 1).ifPresent(moves -> winningMoves = moves);
-            board.findMatchingSequence(0, board.size() - 1, board.size() - 1, 0).ifPresent(moves -> winningMoves = moves);
-        }
+        if (row - col == 0) //  0,0 -> N,N diagonal
+            board.findMatchingInSequence(0, 0, board.size() - 1, board.size() - 1,false)
+                    .ifPresent(moves -> winningMoves = moves);
+        else if (row + col == board.size() - 1) // 0,N -> N,0 diagonal ||
+            board.findMatchingInSequence(0, board.size() - 1, board.size() - 1, 0,false)
+                    .ifPresent(moves -> winningMoves = moves);
 
         return winningMoves != null;
     }
