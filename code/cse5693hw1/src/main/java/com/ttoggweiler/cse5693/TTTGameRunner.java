@@ -6,12 +6,18 @@ import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.CommandLinePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.RandomPlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.SequentialPlayer;
+import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
+import com.ttoggweiler.cse5693.appraiser.board.BoardAppraiser;
+import com.ttoggweiler.cse5693.appraiser.board.BoardCornerApr;
+import com.ttoggweiler.cse5693.appraiser.board.OpenSequenceApr;
+import com.ttoggweiler.cse5693.experience.TicTacToeCritic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,6 +55,8 @@ public class TTTGameRunner
             TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2,initMove);
             game.startGame();
 
+            evaluateGame(game);
+
             String result = game.findWinner().orElse(tie).getName();
             int score = scoreChart.get(result);
             scoreChart.put(result,++score);
@@ -73,6 +81,21 @@ public class TTTGameRunner
         BasePlayer p1 = new CommandLinePlayer();
         BasePlayer p2 = new CommandLinePlayer();
         return playGames(p1,p2,boardSize,iterations,initMoves);
+    }
+
+    public static void evaluateGame(TicTacToeGame game)
+    {
+        BoardAppraiser bApr = new BoardAppraiser();
+        bApr.addSubAppraiser(new BoardCornerApr());
+        bApr.addSubAppraiser(new OpenSequenceApr());
+
+        bApr.initilizeAllWeights(2);
+
+        Map<Move,Float> vTrain = TicTacToeCritic.critique(game.getMoveManager().getMoves(),bApr);
+
+        log.debug(vTrain.toString());
+
+        int i = 0;
     }
 
 

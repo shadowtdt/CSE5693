@@ -90,7 +90,12 @@ public class BoardManager
      */
     public BasePlayer[][] getCurrentBoard()
     {
-        return board.clone();
+        BasePlayer[][] copy = new BasePlayer[size()][size()];
+        for(int i = 0; i < size(); i++)
+            for(int j = 0; j < size(); j++)
+                copy[i][j] = board[i][j];
+
+        return copy;
     }
 
     /**
@@ -150,6 +155,28 @@ public class BoardManager
             // occupant matches
         }
         return Optional.ofNullable(playerToMatch);
+    }
+
+    public Optional<BasePlayer> findWinner()
+    {
+        int length = size() - 1;
+        for(int i = 0; i < length; i++){
+            // Check horizontals
+            if(findMatchingInSequence(i,0,i,length ,false).isPresent())
+                return Optional.of(board[i][0]);
+            // Check verticals
+            if(findMatchingInSequence(0,i,length,i,false).isPresent())
+                return Optional.of(board[0][i]);
+        }
+
+        // Check 0,0 -> N,N
+        if(findMatchingInSequence(0,0,length,length ,false).isPresent())
+            return Optional.of(board[0][0]);
+        // Check 0,N -> N,0
+        if(findMatchingInSequence(0,length,length,0,false).isPresent())
+            return Optional.of(board[0][length]);
+
+        return Optional.empty();
     }
 
     public String getPrettyBoardString(BasePlayer firstPlayer)
@@ -222,4 +249,5 @@ public class BoardManager
         if(state.equals(BoardState.EMPTY))state=BoardState.INTERMEDIATE;
         return true;
     }
+
 }

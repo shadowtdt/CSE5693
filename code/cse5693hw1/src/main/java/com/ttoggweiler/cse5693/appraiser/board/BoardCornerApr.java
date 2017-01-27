@@ -20,10 +20,14 @@ public class BoardCornerApr extends BaseAppraiser<Move>
         BasePlayer[][] board = move.getBoard();
         int size = board.length - 1;
 
-        if(board[0][0].equals(myPlayer))value += OCCUPIED_CORNER_VALUE;
-        if(board[size][0].equals(myPlayer))value += OCCUPIED_CORNER_VALUE;
-        if(board[0][size].equals(myPlayer))value += OCCUPIED_CORNER_VALUE;
-        if(board[size][size].equals(myPlayer))value += OCCUPIED_CORNER_VALUE;
+        if(board[0][0] != null && board[0][0].equals(myPlayer))
+            value += OCCUPIED_CORNER_VALUE;
+        if(board[size][0] != null && board[size][0].equals(myPlayer))
+            value += OCCUPIED_CORNER_VALUE;
+        if(board[0][size] != null && board[0][size].equals(myPlayer))
+            value += OCCUPIED_CORNER_VALUE;
+        if(board[size][size] != null && board[size][size].equals(myPlayer))
+            value += OCCUPIED_CORNER_VALUE;
 
         return getWeight() * value;
     }

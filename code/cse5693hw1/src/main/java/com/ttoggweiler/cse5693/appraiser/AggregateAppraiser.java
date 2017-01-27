@@ -24,4 +24,10 @@ public abstract class AggregateAppraiser<T> extends BaseAppraiser<T>
     {
         if (subAppraiser != null) subAppraisers.add(subAppraiser);
     }
+
+    public void initilizeAllWeights(float initWeight)
+    {
+        this.setWeight(initWeight);
+        subAppraisers.forEach(appr -> appr.setWeight(initWeight));
+    }
 }
