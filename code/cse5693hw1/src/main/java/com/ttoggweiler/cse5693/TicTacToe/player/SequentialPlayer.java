@@ -1,7 +1,8 @@
 package com.ttoggweiler.cse5693.TicTacToe.player;
 
 import com.ttoggweiler.cse5693.TicTacToe.TicTacToeGame;
-import com.ttoggweiler.cse5693.TicTacToe.board.Board;
+import com.ttoggweiler.cse5693.TicTacToe.board.BoardManager;
+import com.ttoggweiler.cse5693.TicTacToe.board.MoveManager;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 
 import java.util.UUID;
@@ -14,7 +15,7 @@ public class SequentialPlayer extends BasePlayer
     @Override
     public Move getNextMove(UUID gameId)
     {
-        return nextSequentialMove(this, getGame(gameId).getBoard());
+        return nextSequentialMove(this, getGame(gameId).getBoardManager());
     }
 
     @Override
@@ -29,7 +30,7 @@ public class SequentialPlayer extends BasePlayer
 
     }
 
-    public static Move nextSequentialMove(BasePlayer player, Board board)
+    public static Move nextSequentialMove(BasePlayer player, BoardManager board)
     {
         for (int i = 0; i <= board.size() - 1; i++)
             for (int j = 0; j <= board.size() - 1; j++)

@@ -1,18 +1,18 @@
 package com.ttoggweiler.cse5693.TicTacToe;
 
-import com.ttoggweiler.cse5693.TicTacToe.board.Board;
+import com.ttoggweiler.cse5693.TicTacToe.board.BoardManager;
+import com.ttoggweiler.cse5693.TicTacToe.board.MoveManager;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Manages the iteraction between player and board
+ * Manages the iteraction between player and moveManager
  * tracks the turn and determines winner
  */
 public class TicTacToeGame
@@ -22,28 +22,31 @@ public class TicTacToeGame
     private UUID id = UUID.randomUUID();
     private long creationTime = System.currentTimeMillis();
 
-    private List<Move> winningMoves = null;
+    private BasePlayer winningPlayer = null;
     private boolean isMinMoveThresholdMet = false;
     private boolean gameStarted = false;
     private boolean gameEnded = false;
 
-    private Board board;
+    private MoveManager moveManager;
+    private BoardManager boardManager;
+
     private BasePlayer player1;
     private BasePlayer player2;
     private BasePlayer currentTurn;
 
     /**
      * Creates a tic tac toe game for the give size with the given players
-     * Constructs a board of dimensions size X size
+     * Constructs a moveManager of dimensions size X size
      * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
-     * @param size dimensions of the game board
+     * @param size dimensions of the game moveManager
      * @param player1 starting player
      * @param player2 player who goes second
      */
     public TicTacToeGame(int size, BasePlayer player1, BasePlayer player2)
     {
         validatePlayers(player1, player2);
-        board = new Board(getId(), size);
+        boardManager = new BoardManager(size);
+        moveManager = new MoveManager(getId(), boardManager);
         this.player1 = player1;
         this.player2 = player2;
         this.currentTurn = this.player1;
@@ -51,9 +54,9 @@ public class TicTacToeGame
 
     /**
      * Creates a tic tac toe game for the give size with the given players, and initializes with the given Move array
-     * Constructs a board of dimensions size X size
+     * Constructs a moveManager of dimensions size X size
      * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
-     * @param size dimensions of the game board
+     * @param size dimensions of the game moveManager
      * @param player1 starting player
      * @param player2 player who goes second
      * @param initMoves the Moves to initialize the game with
@@ -65,14 +68,14 @@ public class TicTacToeGame
         {
             for(Move m : initMoves){
                 m.setPlayer(currentTurn);
-                board.makeMove(m);
+                moveManager.makeMove(m);
                 rotatePlayers();
             }
         }
     }
 
     /**
-     * Creates a traditional tic tac toe game with a 3x3 board and the given players
+     * Creates a traditional tic tac toe game with a 3x3 moveManager and the given players
      * Calls, {@link BasePlayer#getNextMove(UUID)} on the players on their turn
      * @param player1 starting player
      * @param player2 player who goes second
@@ -101,12 +104,21 @@ public class TicTacToeGame
     }
 
     /**
-     * Gets the current board
-     * @return the game board
+     * Gets the current moveManager
+     * @return the game moveManager
      */
-    public Board getBoard()
+    public MoveManager getMoveManager()
     {
-        return this.board;
+        return this.moveManager;
+    }
+
+    /**
+     * Gets the current moveManager
+     * @return the game moveManager
+     */
+    public BoardManager getBoardManager()
+    {
+        return this.boardManager;
     }
 
     /**
@@ -128,15 +140,14 @@ public class TicTacToeGame
     }
 
     /**
-     * Returns the board winner if there is one
+     * Returns the moveManager winner if there is one
      * this check is run every move, quick fails when there have not been enough moves to have a winner
      * returns a known winner, otherwise only checks most recent move's row/col/dig for winning sequence
      * @return game winner, empty optional otherwise
      */
     public Optional<BasePlayer> findWinner()
     {
-        if (winningMoves != null && winningMoves.size() == board.size())
-            return Optional.of(winningMoves.get(0).getPlayer()); // Known winner
+        if (winningPlayer != null) return Optional.of(winningPlayer);
 
         if (!minMoveThresholdMet()) return Optional.empty(); // Not enough moves for there to be a winner
 
@@ -146,7 +157,7 @@ public class TicTacToeGame
                 if (!checkLastMoveVertical())
                     return Optional.empty(); // if all checks fail there is no winner
 
-        return Optional.of(winningMoves.get(0).getPlayer()); // there must be a winner to get here
+        return Optional.of(winningPlayer); // there must be a winner to get here
     }
 
     public void startGame()
@@ -158,25 +169,25 @@ public class TicTacToeGame
         log.info("Game ID: {}", id.toString());
         log.info("Player1 (X): {}", player1.getName());
         log.info("Player2 (O): {}", player2.getName());
-        if(board.getCurrentMoveIndex() != 0) {
-            log.info("Loaded {} moves.", board.getCurrentMoveIndex()+1);
-            log.info(board.getPrettyBoardString());
+        if(moveManager.getCurrentMoveIndex() != 0) {
+            log.info("Loaded {} moves.", moveManager.getCurrentMoveIndex()+1);
+            log.info(boardManager.getPrettyBoardString(player1));
         }
         player1.gameStart(this);
         player2.gameStart(this);
-        while (!findWinner().isPresent() && !board.getState().equals(Board.BoardState.FULL)) // while no winner and non-full board
+        while (!findWinner().isPresent() && !boardManager.getState().equals(BoardManager.BoardState.FULL)) // while no winner and non-full moveManager
         {
             try {
                 // assert previous and current turn are not the same player
-                if (board.findLastMove().isPresent()) assert board.findLastMove().get().getPlayer() != currentTurn;
+                if (moveManager.findLastMove().isPresent()) assert moveManager.findLastMove().get().getPlayer() != currentTurn;
 
                 Move nextMove = currentTurn.getNextMove(getId());
                 if(gameEnded)break; // Check to see if game ended while waiting for move
 
                 log.debug("{} making move {}", nextMove.getPlayer().getName(), Arrays.toString(nextMove.getMove()));
-                board.makeMove(nextMove);
+                moveManager.makeMove(nextMove);
                 if(!nextMove.wasAccepted())log.error("Invalid move submitted");
-                log.debug(board.getPrettyBoardString());
+                log.debug(boardManager.getPrettyBoardString(player1));
                 rotatePlayers();
             } catch (Exception e) {
                 log.error(currentTurn.getName() + "'s last move was invalid, repeating turn.", e);
@@ -196,12 +207,12 @@ public class TicTacToeGame
         if(gameEnded)return;
         log.info("** TicTacToe game end **");
         log.info("Game ID: {}", id.toString());
-        log.info(board.getPrettyBoardString());
+        log.info(boardManager.getPrettyBoardString(player1));
         BasePlayer winner = null;
-        if (winningMoves != null) {
-            winner = winningMoves.get(0).getPlayer();
+        if (winningPlayer != null) {
+            winner = winningPlayer;
             log.info("Winner: {}", winner.getName());
-        } else if (board.getState().equals(Board.BoardState.FULL)) {
+        } else if (boardManager.getState().equals(BoardManager.BoardState.FULL)) {
             log.info("Tie between players {} and {}", player1.getName(), player2.getName());
         } else
         {
@@ -221,7 +232,7 @@ public class TicTacToeGame
     private boolean minMoveThresholdMet()
     {
         if (!isMinMoveThresholdMet) {
-            isMinMoveThresholdMet = ((board.size() * 2) - 1) <= board.getCurrentMoveIndex();
+            isMinMoveThresholdMet = ((boardManager.size() * 2) - 1) <= moveManager.getCurrentMoveIndex();
         }
         return isMinMoveThresholdMet;
     }
@@ -232,12 +243,12 @@ public class TicTacToeGame
      */
     private boolean checkLastMoveHorizontal()
     {
-        Move lastMove = board.findLastMove().orElseThrow(() ->
+        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Horizontal check should always be preceded by the Min-Move-Threshold check."));
         int row = lastMove.getMove()[0];
-        board.findMatchingInSequence(row, 0, row, board.size() - 1,false)
-                .ifPresent(moves -> winningMoves = moves);
-        return winningMoves != null;
+        boardManager.findMatchingInSequence(row, 0, row, boardManager.size() - 1,false)
+                .ifPresent(player -> winningPlayer = player);
+        return winningPlayer != null;
     }
 
     /**
@@ -246,12 +257,12 @@ public class TicTacToeGame
      */
     private boolean checkLastMoveVertical()
     {
-        Move lastMove = board.findLastMove().orElseThrow(() ->
+        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Vertical check should always be preceded by the Min-Move-Threshold check."));
         int col = lastMove.getMove()[1];
-        board.findMatchingInSequence(0, col, board.size() - 1, col,false)
-                .ifPresent(moves -> winningMoves = moves);
-        return winningMoves != null;
+        boardManager.findMatchingInSequence(0, col, boardManager.size() - 1, col,false)
+                .ifPresent(player -> winningPlayer = player);
+        return winningPlayer != null;
     }
 
     /**
@@ -260,20 +271,20 @@ public class TicTacToeGame
      */
     private boolean checkLastMoveDiagonal()
     {
-        Move lastMove = board.findLastMove().orElseThrow(() ->
+        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
                 new IllegalStateException("Diagonal check should always be preceded by the Min-Move-Threshold check."));
         int row = lastMove.getMove()[0];
         int col = lastMove.getMove()[1];
-
+        int size = boardManager.size() - 1;
         // Quick fail if the last move was not on a diagonal
         if (row - col == 0) //  0,0 -> N,N diagonal
-            board.findMatchingInSequence(0, 0, board.size() - 1, board.size() - 1,false)
-                    .ifPresent(moves -> winningMoves = moves);
-        else if (row + col == board.size() - 1) // 0,N -> N,0 diagonal ||
-            board.findMatchingInSequence(0, board.size() - 1, board.size() - 1, 0,false)
-                    .ifPresent(moves -> winningMoves = moves);
+            boardManager.findMatchingInSequence(0, 0, size, size,false)
+                    .ifPresent(moves -> winningPlayer = moves);
+        else if (row + col == boardManager.size() - 1) // 0,N -> N,0 diagonal ||
+            boardManager.findMatchingInSequence(0, size, size, 0,false)
+                    .ifPresent(moves -> winningPlayer = moves);
 
-        return winningMoves != null;
+        return winningPlayer != null;
     }
 
     /**
@@ -290,7 +301,7 @@ public class TicTacToeGame
     private BasePlayer rotatePlayers()
     {
         if(currentTurn == null)currentTurn = player1; // if null assume it is player1's turn
-        else board.findLastMove().ifPresent(m -> // get last move
+        else moveManager.findLastMove().ifPresent(m -> // get last move
                 currentTurn = (m.getPlayer().getId().equals(player1.getId())? // compare previous move with player1 id
                         player2:player1));// it matching, player2's turn, else it is player1's
         return currentTurn;

@@ -1,7 +1,8 @@
 package com.ttoggweiler.cse5693.TicTacToe.player;
 
 import com.ttoggweiler.cse5693.TicTacToe.TicTacToeGame;
-import com.ttoggweiler.cse5693.TicTacToe.board.Board;
+import com.ttoggweiler.cse5693.TicTacToe.board.BoardManager;
+import com.ttoggweiler.cse5693.TicTacToe.board.MoveManager;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 
 import java.util.PrimitiveIterator;
@@ -17,7 +18,7 @@ public class RandomPlayer extends BasePlayer
     @Override
     public Move getNextMove(UUID gameId)
     {
-        return randomMove(this, getGame(gameId).getBoard());
+        return randomMove(this, getGame(gameId).getBoardManager());
     }
 
     @Override
@@ -32,7 +33,7 @@ public class RandomPlayer extends BasePlayer
 
     }
 
-    public static Move randomMove(BasePlayer player, Board board)
+    public static Move randomMove(BasePlayer player, BoardManager board)
     {
         IntStream ints = new Random().ints(0, board.size());
 

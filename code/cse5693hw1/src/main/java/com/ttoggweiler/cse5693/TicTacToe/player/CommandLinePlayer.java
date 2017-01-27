@@ -25,7 +25,7 @@ public class CommandLinePlayer extends BasePlayer
 
     public CommandLinePlayer(String name)
     {
-        if(name == null || name.isEmpty()) name = getNameFromUser();
+        if(name == null || name.trim().isEmpty()) name = getNameFromUser();
         this.setName(name);
     }
 
@@ -62,6 +62,9 @@ public class CommandLinePlayer extends BasePlayer
     private Move getMoveFromUser(TicTacToeGame game)
     {
         boolean valid = false;
+        BasePlayer startingPlayer = game.getMoveManager().findMoveForIndex(0)
+                .map(Move :: getPlayer).orElse(game.whoseTurnIsIt());
+
         Move m = null;
         while (!valid) {
             log.info("Player {} turn, input next move:", getName());
@@ -74,7 +77,7 @@ public class CommandLinePlayer extends BasePlayer
                 int rCoord = Integer.parseInt(coords[0].trim());
                 int cCoord = Integer.parseInt(coords[1].trim());
                 m = new Move(this,rCoord,cCoord);
-                valid = game.getBoard().isMoveValid(m);
+                valid = game.getMoveManager().isMoveValid(m);
 
                 if(!valid)
                 {
@@ -84,7 +87,7 @@ public class CommandLinePlayer extends BasePlayer
                 switch (input.trim().toLowerCase()) {
                     case "print":
                     case "p":
-                        log.info(game.getBoard().getPrettyBoardString());
+                        log.info(game.getBoardManager().getPrettyBoardString(startingPlayer));
                         break;
                     case "quit":
                     case "q":

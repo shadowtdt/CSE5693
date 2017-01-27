@@ -12,12 +12,15 @@ public class Move
 {
     private UUID id = UUID.randomUUID();
     private UUID gameId;
-    private Long creationTime = System.currentTimeMillis(); // object createion
+    private Long creationTime = System.currentTimeMillis(); // object creation
     private Long moveTime; // when the move was made in the game
     private boolean accepted = false; // if the move was accepted
     private Throwable rejectionCause;
     private BasePlayer player; // the player making the move
+
     private int[] move; // the coordinates of the move
+    private BasePlayer[][] board; // board after move was made
+
     private int gameMoveIndex = -1; // the order of the move for a given game
 
     Move(int row, int col)
@@ -99,6 +102,16 @@ public class Move
     void setGameMoveIndex(int gameMoveIndex)
     {
         this.gameMoveIndex = gameMoveIndex;
+    }
+
+    public BasePlayer[][] getBoard()
+    {
+        return board;
+    }
+
+    public void setBoard(BasePlayer[][] board)
+    {
+        this.board = board;
     }
 
     void setRejectionCause(Throwable t)
