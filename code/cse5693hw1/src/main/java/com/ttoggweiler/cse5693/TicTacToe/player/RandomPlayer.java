@@ -43,7 +43,7 @@ public class RandomPlayer extends BasePlayer
             int x = intItr.next();
             int y = intItr.next();
             if(!board.isOccupied(x, y))
-                return new Move(player, x, y);
+                return new Move(player.getId(), x, y);
 
         }
 

@@ -16,10 +16,10 @@ public class Move
     private Long moveTime; // when the move was made in the game
     private boolean accepted = false; // if the move was accepted
     private Throwable rejectionCause;
-    private BasePlayer player; // the player making the move
+    private UUID player; // the player making the move
 
     private int[] move; // the coordinates of the move
-    private BasePlayer[][] board; // board after move was made
+    private UUID[][] board; // board after move was made
 
     private int gameMoveIndex = -1; // the order of the move for a given game
 
@@ -28,7 +28,7 @@ public class Move
         move = new int[]{row,col};
     }
 
-    public Move(BasePlayer player, int row, int col)
+    public Move(UUID player, int row, int col)
     {
         if(player == null) throw new NullPointerException("Player of move cannot be mull");
         this.player = player;
@@ -74,12 +74,12 @@ public class Move
         this.accepted = accepted;
     }
 
-    public BasePlayer getPlayer()
+    public UUID getPlayer()
     {
         return player;
     }
 
-    public void setPlayer(BasePlayer player)
+    public void setPlayer(UUID player)
     {
         this.player = player;
     }
@@ -104,12 +104,12 @@ public class Move
         this.gameMoveIndex = gameMoveIndex;
     }
 
-    public BasePlayer[][] getBoard()
+    public UUID[][] getBoard()
     {
         return board;
     }
 
-    public void setBoard(BasePlayer[][] board)
+    public void setBoard(UUID[][] board)
     {
         this.board = board;
     }

@@ -5,6 +5,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Helper methods for working with N size boards for ticTacToe
@@ -25,10 +26,10 @@ public class BoardManager
         INTERMEDIATE, // Some spaces available
     }
 
-    private BasePlayer[][] board;
+    private UUID[][] board;
     private BoardState state;
 
-    public BoardManager(BasePlayer[][] board)
+    public BoardManager(UUID[][] board)
     {
         if(board == null) throw new NullPointerException("Null board provided ");
         else this.board = board.clone();
@@ -88,9 +89,9 @@ public class BoardManager
      * Returns a clone of the current board
      * @return Player[][] array of the current board state
      */
-    public BasePlayer[][] getCurrentBoard()
+    public UUID[][] getCurrentBoard()
     {
-        BasePlayer[][] copy = new BasePlayer[size()][size()];
+        UUID[][] copy = new UUID[size()][size()];
         for(int i = 0; i < size(); i++)
             for(int j = 0; j < size(); j++)
                 copy[i][j] = board[i][j];
@@ -103,7 +104,7 @@ public class BoardManager
      * @param coordinates row and column where to look for player
      * @return if occupied, player occupant, empty optional otherwise
      */
-    public Optional<BasePlayer> findPlayer(int... coordinates)
+    public Optional<UUID> findPlayer(int... coordinates)
     {
         if (coordinates.length != 2)
             throw new IllegalArgumentException("Invalid number of dimensions for coordinates " + Arrays.toString(coordinates));
@@ -122,7 +123,7 @@ public class BoardManager
      *
      */
     // TODO: ttoggweiler 1/26/17 update
-    public Optional<BasePlayer> findMatchingInSequence(int r0, int c0, int r1, int c1, boolean allowEmpty)
+    public Optional<UUID> findMatchingInSequence(int r0, int c0, int r1, int c1, boolean allowEmpty)
     {
         //Check if coordinates are in the bounds of the board
         isInBounds(r0, c0);
@@ -135,13 +136,13 @@ public class BoardManager
         if (!zeroDeltaExists && ((rowDelta + 0.0f) / colDelta) != 1.0)
             throw new IllegalArgumentException("Sequence is not a valid line");
 
-        BasePlayer playerToMatch = null;
+        UUID playerToMatch = null;
         int r = r0;
         int c = c0;
         //because slope must be one, the deltas wth be the same, rowDelta vs colDelta
         float sequenceLength = (zeroDeltaExists) ? (rowDelta + colDelta) : rowDelta;
         for (int i = 0; i <= sequenceLength; i++) {
-            Optional<BasePlayer> oPlayer = findPlayer(r, c);
+            Optional<UUID> oPlayer = findPlayer(r, c);
             if(rowDelta != 0)r = (r0 < r1) ? r + 1 : r - 1;// Move the index based on the slope
             if(colDelta != 0)c = (c0 < c1) ? c + 1 : c - 1;
 
@@ -150,14 +151,14 @@ public class BoardManager
                 else return Optional.empty(); // Quick fail if space is not occupied
             else if (playerToMatch == null)
                 playerToMatch = oPlayer.get(); // init player to match sequence
-            else if (!BasePlayer.areMatching(playerToMatch, oPlayer.get()))
+            else if (!playerToMatch.equals(oPlayer.get()))
                 return Optional.empty();// Quick fail on miss matched players
             // occupant matches
         }
         return Optional.ofNullable(playerToMatch);
     }
 
-    public Optional<BasePlayer> findWinner()
+    public Optional<UUID> findWinner()
     {
         int length = size() - 1;
         for(int i = 0; i < length; i++){
@@ -179,7 +180,7 @@ public class BoardManager
         return Optional.empty();
     }
 
-    public String getPrettyBoardString(BasePlayer firstPlayer)
+    public String getPrettyBoardString(UUID firstPlayer)
     {
         String boardStr = "\n";
         for (int i = 0; i < board.length; i++) {
@@ -224,10 +225,10 @@ public class BoardManager
      * @param size the dimensions of the board, minimum value of 3 is required
      * @return Null Player[][] matrix
      */
-    public static BasePlayer[][] createBoard(int size)
+    public static UUID[][] createBoard(int size)
     {
         if (size < 3) throw new IllegalArgumentException("MoveManager size has a minimum value of 3");
-        BasePlayer[][] newBoard = new BasePlayer[size][size];
+        UUID[][] newBoard = new UUID[size][size];
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
                 newBoard[i][j] = null;
@@ -241,7 +242,7 @@ public class BoardManager
      * @param col
      * @return
      */
-    boolean occupySpace(BasePlayer player, int row, int col)
+    boolean occupySpace(UUID player, int row, int col)
     {
         if(player == null) throw new NullPointerException("Null player cannot occupy a space");
         if(board[row][col] != null)return false;

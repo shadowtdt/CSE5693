@@ -4,6 +4,8 @@ import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
 
+import java.util.UUID;
+
 /**
  * For each corner of the board that is owned, +1
  */
@@ -16,8 +18,8 @@ public class BoardCornerApr extends BaseAppraiser<Move>
     public float appraise(Move move)
     {
         float value = 0f;
-        BasePlayer myPlayer = move.getPlayer();
-        BasePlayer[][] board = move.getBoard();
+        UUID myPlayer = move.getPlayer();
+        UUID[][] board = move.getBoard();
         int size = board.length - 1;
 
         if(board[0][0] != null && board[0][0].equals(myPlayer))

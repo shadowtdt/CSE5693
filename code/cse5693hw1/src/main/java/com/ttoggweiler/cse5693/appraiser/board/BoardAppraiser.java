@@ -7,6 +7,7 @@ import com.ttoggweiler.cse5693.appraiser.AggregateAppraiser;
 import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Board evaluator that uses sub-appraisers to give a board an approximate value
@@ -24,7 +25,7 @@ public class BoardAppraiser extends AggregateAppraiser<Move>
     {
         // Check if board has a winner
         BoardManager bm = new BoardManager(input.getBoard());
-        Optional<BasePlayer> winner = bm.findWinner();
+        Optional<UUID> winner = bm.findWinner();
         if (bm.findWinner().isPresent()) {
             if (winner.get().equals(input.getPlayer()))
                 return WON_GAME_VALUE;

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Runs the tick-tack-toe game with the specified configuration
@@ -57,9 +58,10 @@ public class TTTGameRunner
 
             evaluateGame(game);
 
-            String result = game.findWinner().orElse(tie).getName();
-            int score = scoreChart.get(result);
-            scoreChart.put(result,++score);
+            UUID winnderID = game.findWinner().orElse(tie.getId());
+            String winnerName = (player1.getId().equals(winnderID)?player1.getName():player2.getName());
+            int score = scoreChart.get(winnerName);
+            scoreChart.put(winnerName,++score);
             log.warn("Game {} Stats {}:",i, scoreChart.toString());
         }
         return (scoreChart.get(player1.getName()) > scoreChart.get(player2.getName()))? player1 : player2;

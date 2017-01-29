@@ -5,6 +5,8 @@ import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
 
+import java.util.UUID;
+
 /**
  * Appraises board based on the number of sequences that do not have an opponent occupant
  */
@@ -16,7 +18,7 @@ public class OpenSequenceApr extends BaseAppraiser<Move>
     public float appraise(Move move)
     {
         float value = 0f;
-        BasePlayer myPlayer = move.getPlayer();
+        UUID myPlayer = move.getPlayer();
         BoardManager bm = new BoardManager(move.getBoard());
         int length = bm.size()-1;
         

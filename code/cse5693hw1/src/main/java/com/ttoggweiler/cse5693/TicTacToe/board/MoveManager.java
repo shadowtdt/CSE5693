@@ -96,7 +96,7 @@ public class MoveManager
      * @param player the player of the move
      * @return the most recent move, empty optional otherwirse
      */
-    public Optional<Move> findLastMoveForPlayer(BasePlayer player)
+    public Optional<Move> findLastMoveForPlayer(UUID player)
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         List<Move> playerMoves = moveHistory.stream()
@@ -120,7 +120,7 @@ public class MoveManager
      * @param player the player of the moves
      * @return MoveIndex sorted list of moves for the given player
      */
-    public Optional<List<Move>> findMovesForPlayer(BasePlayer player)
+    public Optional<List<Move>> findMovesForPlayer(UUID player)
     {
         if (moveHistory.isEmpty()) return Optional.empty();
         List<Move> playerMoves = moveHistory.stream()

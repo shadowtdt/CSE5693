@@ -62,7 +62,7 @@ public class CommandLinePlayer extends BasePlayer
     private Move getMoveFromUser(TicTacToeGame game)
     {
         boolean valid = false;
-        BasePlayer startingPlayer = game.getMoveManager().findMoveForIndex(0)
+        UUID startingPlayer = game.getMoveManager().findMoveForIndex(0)
                 .map(Move :: getPlayer).orElse(game.whoseTurnIsIt());
 
         Move m = null;
@@ -76,7 +76,7 @@ public class CommandLinePlayer extends BasePlayer
                 if (coords.length != 2) log.warn("Incorrect number of coordinates found in: {}" , input);
                 int rCoord = Integer.parseInt(coords[0].trim());
                 int cCoord = Integer.parseInt(coords[1].trim());
-                m = new Move(this,rCoord,cCoord);
+                m = new Move(getId(),rCoord,cCoord);
                 valid = game.getMoveManager().isMoveValid(m);
 
                 if(!valid)

@@ -22,7 +22,7 @@ public class TicTacToeGame
     private UUID id = UUID.randomUUID();
     private long creationTime = System.currentTimeMillis();
 
-    private BasePlayer winningPlayer = null;
+    private UUID winningPlayer = null;
     private boolean isMinMoveThresholdMet = false;
     private boolean gameStarted = false;
     private boolean gameEnded = false;
@@ -67,7 +67,7 @@ public class TicTacToeGame
         if(initMoves != null)
         {
             for(Move m : initMoves){
-                m.setPlayer(currentTurn);
+                m.setPlayer(currentTurn.getId());
                 moveManager.makeMove(m);
                 rotatePlayers();
             }
@@ -125,9 +125,9 @@ public class TicTacToeGame
      * Gets the player whos turn it is
      * @return player who will make the next move
      */
-    public BasePlayer whoseTurnIsIt()
+    public UUID whoseTurnIsIt()
     {
-        return this.currentTurn;
+        return this.currentTurn.getId();
     }
 
     /**
@@ -145,7 +145,7 @@ public class TicTacToeGame
      * returns a known winner, otherwise only checks most recent move's row/col/dig for winning sequence
      * @return game winner, empty optional otherwise
      */
-    public Optional<BasePlayer> findWinner()
+    public Optional<UUID> findWinner()
     {
         if (winningPlayer != null) return Optional.of(winningPlayer);
 
@@ -171,7 +171,7 @@ public class TicTacToeGame
         log.info("Player2 (O): {}", player2.getName());
         if(moveManager.getCurrentMoveIndex() != 0) {
             log.info("Loaded {} moves.", moveManager.getCurrentMoveIndex()+1);
-            log.info(boardManager.getPrettyBoardString(player1));
+            log.info(boardManager.getPrettyBoardString(player1.getId()));
         }
         player1.gameStart(this);
         player2.gameStart(this);
@@ -179,15 +179,15 @@ public class TicTacToeGame
         {
             try {
                 // assert previous and current turn are not the same player
-                if (moveManager.findLastMove().isPresent()) assert moveManager.findLastMove().get().getPlayer() != currentTurn;
+                if (moveManager.findLastMove().isPresent()) assert moveManager.findLastMove().get().getPlayer() != currentTurn.getId();
 
                 Move nextMove = currentTurn.getNextMove(getId());
                 if(gameEnded)break; // Check to see if game ended while waiting for move
 
-                log.debug("{} making move {}", nextMove.getPlayer().getName(), Arrays.toString(nextMove.getMove()));
+                log.debug("{} making move {}", getPlayerForId(nextMove.getPlayer()).getName(), Arrays.toString(nextMove.getMove()));
                 moveManager.makeMove(nextMove);
                 if(!nextMove.wasAccepted())log.error("Invalid move submitted");
-                log.debug(boardManager.getPrettyBoardString(player1));
+                log.debug(boardManager.getPrettyBoardString(player1.getId()));
                 rotatePlayers();
             } catch (Exception e) {
                 log.error(currentTurn.getName() + "'s last move was invalid, repeating turn.", e);
@@ -207,11 +207,11 @@ public class TicTacToeGame
         if(gameEnded)return;
         log.info("** TicTacToe game end **");
         log.info("Game ID: {}", id.toString());
-        log.info(boardManager.getPrettyBoardString(player1));
-        BasePlayer winner = null;
+        log.info(boardManager.getPrettyBoardString(player1.getId()));
+        UUID winner = null;
         if (winningPlayer != null) {
             winner = winningPlayer;
-            log.info("Winner: {}", winner.getName());
+            log.info("Winner: {}", getPlayerForId(winner).getName());
         } else if (boardManager.getState().equals(BoardManager.BoardState.FULL)) {
             log.info("Tie between players {} and {}", player1.getName(), player2.getName());
         } else
@@ -219,8 +219,8 @@ public class TicTacToeGame
             log.info("Premature game ending.");
         }
 
-        player1.gameEnded(this.getId(),winner == player1);
-        player2.gameEnded(this.getId(),winner == player2);
+        player1.gameEnded(this.getId(),winner == player1.getId());
+        player2.gameEnded(this.getId(),winner == player2.getId());
         gameEnded = true;
     }
     /* victory checking */
@@ -302,9 +302,18 @@ public class TicTacToeGame
     {
         if(currentTurn == null)currentTurn = player1; // if null assume it is player1's turn
         else moveManager.findLastMove().ifPresent(m -> // get last move
-                currentTurn = (m.getPlayer().getId().equals(player1.getId())? // compare previous move with player1 id
+                currentTurn = (m.getPlayer().equals(player1.getId())? // compare previous move with player1 id
                         player2:player1));// it matching, player2's turn, else it is player1's
         return currentTurn;
+    }
+
+    private BasePlayer getPlayerForId(UUID id)
+    {
+        if (id == null) throw new NullPointerException("Failed to get player for null ID");
+        if(player1.getId().equals(id))return player1;
+        else if(player2.getId().equals(id))return player1;
+        else throw new IllegalArgumentException("No player with ID: "+id.toString()+" exists for game "+ getId().toString());
+
     }
 
 }

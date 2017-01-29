@@ -35,7 +35,7 @@ public class SequentialPlayer extends BasePlayer
         for (int i = 0; i <= board.size() - 1; i++)
             for (int j = 0; j <= board.size() - 1; j++)
                 if (!board.isOccupied(i, j))
-                    return new Move(player, i, j);
+                    return new Move(player.getId(), i, j);
         assert false;
         return null;
     }
