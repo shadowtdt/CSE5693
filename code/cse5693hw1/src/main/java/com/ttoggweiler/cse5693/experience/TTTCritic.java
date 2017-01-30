@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * Vt(b) <- V~(Successor(b))
  */
-public class TicTacToeCritic
+public class TTTCritic
 {
     public static void critique(List<Move> moves, BaseAppraiser<Move> appraiser)
     {

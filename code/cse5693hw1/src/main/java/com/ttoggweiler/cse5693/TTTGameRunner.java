@@ -6,11 +6,10 @@ import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.CommandLinePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.RandomPlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.SequentialPlayer;
-import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
 import com.ttoggweiler.cse5693.appraiser.board.BoardAppraiser;
 import com.ttoggweiler.cse5693.appraiser.board.BoardCornerApr;
 import com.ttoggweiler.cse5693.appraiser.board.OpenSequenceApr;
-import com.ttoggweiler.cse5693.experience.TicTacToeCritic;
+import com.ttoggweiler.cse5693.experience.TTTCritic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -96,7 +94,7 @@ public class TTTGameRunner
         bApr.initilizeAllWeights(2);
 
         List<Move> trace = game.getMoveManager().getMoves();
-        TicTacToeCritic.critique(trace, bApr);
+        TTTCritic.critique(trace, bApr);
 
         for(Move m : trace)
             log.debug("{} Train: {}",Arrays.toString(m.getMove()),m.getTrainingValue());
