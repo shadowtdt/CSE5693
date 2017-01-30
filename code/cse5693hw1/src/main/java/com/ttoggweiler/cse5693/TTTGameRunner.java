@@ -56,10 +56,10 @@ public class TTTGameRunner
             TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2,initMove);
             game.startGame();
 
-            evaluateGame(game);
+            evaluateGame(game); // Appraiser
 
-            UUID winnderID = game.findWinner().orElse(tie.getId());
-            String winnerName = (player1.getId().equals(winnderID)?player1.getName():player2.getName());
+            UUID winnerID = game.findWinner().orElse(tie.getId());
+            String winnerName = (player1.getId().equals(winnerID)?player1.getName():player2.getName());
             int score = scoreChart.get(winnerName);
             scoreChart.put(winnerName,++score);
             log.warn("Game {} Stats {}:",i, scoreChart.toString());

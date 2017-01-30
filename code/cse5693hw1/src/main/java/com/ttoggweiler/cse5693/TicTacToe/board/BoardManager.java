@@ -161,7 +161,7 @@ public class BoardManager
     public Optional<UUID> findWinner()
     {
         int length = size() - 1;
-        for(int i = 0; i < length; i++){
+        for(int i = 0; i <= length; i++){
             // Check horizontals
             if(findMatchingInSequence(i,0,i,length ,false).isPresent())
                 return Optional.of(board[i][0]);

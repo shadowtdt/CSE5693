@@ -2,7 +2,6 @@ package com.ttoggweiler.cse5693.appraiser.board;
 
 import com.ttoggweiler.cse5693.TicTacToe.board.BoardManager;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
-import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.appraiser.AggregateAppraiser;
 import com.ttoggweiler.cse5693.appraiser.BaseAppraiser;
 
@@ -33,7 +32,7 @@ public class BoardAppraiser extends AggregateAppraiser<Move>
                 return LOST_GAME_VALUE;
         } else if (bm.getState().equals(BoardManager.BoardState.FULL)) {
             return TIE_GAME_VALUE;
-        } else { // Otherwise summation the sub-appraisers
+        } else { // Otherwise summation of the sub-appraisers
             float value = 0f;
             for (BaseAppraiser<Move> appraiser : getSubAppraisers())
                 value += appraiser.appraise(input);

@@ -24,18 +24,18 @@ public class OpenSequenceApr extends BaseAppraiser<Move>
         
         for(int i = 0; i < length; i++){
             // Check horizontals
-            if(bm.findMatchingInSequence(i,0,i,length ,true).isPresent())
+            if(bm.findMatchingInSequence(i,0,i,length ,true).filter(myPlayer::equals).isPresent())
                 value += OPEN_SEQUENCE_VALUE;
             // Check verticals
-            if(bm.findMatchingInSequence(0,i,length,i,true).isPresent())
+            if(bm.findMatchingInSequence(0,i,length,i,true).filter(myPlayer::equals).isPresent())
                 value += OPEN_SEQUENCE_VALUE;
         }
 
         // Check 0,0 -> N,N
-        if(bm.findMatchingInSequence(0,0,length,length ,true).isPresent())
+        if(bm.findMatchingInSequence(0,0,length,length ,true).filter(myPlayer::equals).isPresent())
             value += OPEN_SEQUENCE_VALUE;
         // Check 0,N -> N,0
-        if(bm.findMatchingInSequence(0,length,length,0,true).isPresent())
+        if(bm.findMatchingInSequence(0,length,length,0,true).filter(myPlayer::equals).isPresent())
             value += OPEN_SEQUENCE_VALUE;
 
         return getWeight() * value;
