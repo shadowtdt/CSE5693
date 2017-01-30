@@ -16,7 +16,11 @@ public class Move
     private Long moveTime; // when the move was made in the game
     private boolean accepted = false; // if the move was accepted
     private Throwable rejectionCause;
+
+
     private UUID player; // the player making the move
+    private float estimatedValue = 0;
+    private float trainingValue = 0;
 
     private int[] move; // the coordinates of the move
     private UUID[][] board; // board after move was made
@@ -124,6 +128,25 @@ public class Move
         return rejectionCause;
     }
 
+    public float getEstimatedValue()
+    {
+        return estimatedValue;
+    }
+
+    public void setEstimatedValue(float estimatedValue)
+    {
+        this.estimatedValue = estimatedValue;
+    }
+
+    public float getTrainingValue()
+    {
+        return trainingValue;
+    }
+
+    public void setTrainingValue(float trainingValue)
+    {
+        this.trainingValue = trainingValue;
+    }
     public String toString()
     {
         return "("+move[0]+","+move[1]+")";

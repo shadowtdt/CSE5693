@@ -14,9 +14,11 @@ import com.ttoggweiler.cse5693.experience.TicTacToeCritic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -32,15 +34,15 @@ public class TTTGameRunner
     {
         log.info("==== Tic-Tac-Toe Game Runner ====");
 
-        randomVsSequential(3,100,null);
+        randomVsSequential(3, 100, null);
         //humanVsHuman(3,1,null);
     }
 
     public static BasePlayer playGames(BasePlayer player1, BasePlayer player2, int boardSize, int iterations, Set<Move[]> initMoves)
     {
-        if(initMoves == null)initMoves = new HashSet<>();
-        if(boardSize < 3)boardSize = 3;
-        if(iterations < 1)iterations = 1;
+        if (initMoves == null) initMoves = new HashSet<>();
+        if (boardSize < 3) boardSize = 3;
+        if (iterations < 1) iterations = 1;
 
         BasePlayer tie = new RandomPlayer();
         tie.setName("Tie");
@@ -52,19 +54,19 @@ public class TTTGameRunner
 
         Iterator<Move[]> initItr = initMoves.iterator();
         for (int i = 0; i < iterations; i++) {
-            Move[] initMove = (initItr.hasNext())?initItr.next():null;
-            TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2,initMove);
+            Move[] initMove = (initItr.hasNext()) ? initItr.next() : null;
+            TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2, initMove);
             game.startGame();
 
             evaluateGame(game); // Appraiser
 
             UUID winnerID = game.findWinner().orElse(tie.getId());
-            String winnerName = (player1.getId().equals(winnerID)?player1.getName():player2.getName());
+            String winnerName = (player1.getId().equals(winnerID) ? player1.getName() : player2.getName());
             int score = scoreChart.get(winnerName);
-            scoreChart.put(winnerName,++score);
-            log.warn("Game {} Stats {}:",i, scoreChart.toString());
+            scoreChart.put(winnerName, ++score);
+            log.warn("Game {} Stats {}:", i, scoreChart.toString());
         }
-        return (scoreChart.get(player1.getName()) > scoreChart.get(player2.getName()))? player1 : player2;
+        return (scoreChart.get(player1.getName()) > scoreChart.get(player2.getName())) ? player1 : player2;
     }
 
     public static BasePlayer randomVsSequential(int boardSize, int iterations, Set<Move[]> initMoves)
@@ -75,14 +77,14 @@ public class TTTGameRunner
         p1.setName("Rand");
         p2.setName("Sequ");
 
-        return playGames(p1,p2,boardSize,iterations,initMoves);
+        return playGames(p1, p2, boardSize, iterations, initMoves);
     }
 
     public static BasePlayer humanVsHuman(int boardSize, int iterations, Set<Move[]> initMoves)
     {
         BasePlayer p1 = new CommandLinePlayer();
         BasePlayer p2 = new CommandLinePlayer();
-        return playGames(p1,p2,boardSize,iterations,initMoves);
+        return playGames(p1, p2, boardSize, iterations, initMoves);
     }
 
     public static void evaluateGame(TicTacToeGame game)
@@ -93,11 +95,12 @@ public class TTTGameRunner
 
         bApr.initilizeAllWeights(2);
 
-        Map<Move,Float> vTrain = TicTacToeCritic.critique(game.getMoveManager().getMoves(),bApr);
+        List<Move> trace = game.getMoveManager().getMoves();
+        TicTacToeCritic.critique(trace, bApr);
 
-        log.debug(vTrain.toString());
+        for(Move m : trace)
+            log.debug("{} Train: {}",Arrays.toString(m.getMove()),m.getTrainingValue());
 
-        int i = 0;
     }
 
 

@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class TicTacToeCritic
 {
-    public static Map<Move,Float> critique(List<Move> moves, BaseAppraiser<Move> appraiser)
+    public static void critique(List<Move> moves, BaseAppraiser<Move> appraiser)
     {
         if(moves == null || moves.isEmpty() || appraiser == null)
             throw new NullPointerException("Critic received null/empty moves list or a null appraiser");
@@ -24,21 +24,24 @@ public class TicTacToeCritic
         int size = moves.size() - 1;
         Move lastMove = moves.get(size);
         float lastMoveApr = appraiser.appraise(lastMove);
+        lastMove.setTrainingValue(lastMoveApr);
 
-        if(lastMoveApr != 100 && lastMoveApr != -100 && lastMoveApr!= 10)
-            throw new IllegalArgumentException("Critic received a non-winning game trace!");
-
-        Map<Move,Float> vTrain = new HashMap<>();
-        ListIterator<Move> current = moves.listIterator(moves.size() - 2); // c(n-1)
-        ListIterator<Move> succussor = moves.listIterator(moves.size() - 1);// s(n)
-
-        vTrain.put(current.previous(),lastMoveApr);// c(n-2)
-        while(current.hasPrevious())
-        {
-//            current.previous(); // c(n-3)
-//            succussor.previous(); // s(n-1)
-            vTrain.put(current.previous(),appraiser.appraise(succussor.previous())); // c(n-4) & s(n-2)..
+        // Set last move -1/-2 based on the winning moves value
+        if(lastMoveApr == 100){
+            moves.get(size-1).setTrainingValue(-100);// set losing value for winningMove - 1
+            moves.get(size-2).setTrainingValue(100);// set training value for winningMove - 2
         }
-        return vTrain;
+        else if(lastMoveApr == 10){
+            moves.get(size-1).setTrainingValue(10);// set tying value for lastMove - 1
+            moves.get(size-2).setTrainingValue(10);// set tying value for lastMove - 2
+        }
+        else throw new IllegalArgumentException("Critic received a game trace that did not end with a winner or a tie, unable to determine training values for moves!");
+
+        ListIterator<Move> successor = moves.listIterator(size);
+        ListIterator<Move> current = moves.listIterator(size - 2);
+
+
+        while(current.hasPrevious())
+            current.previous().setTrainingValue(appraiser.appraise(successor.previous()));
     }
 }
