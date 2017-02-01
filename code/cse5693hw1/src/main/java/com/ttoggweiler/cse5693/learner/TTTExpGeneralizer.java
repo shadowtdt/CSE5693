@@ -34,6 +34,8 @@ public class TTTExpGeneralizer
                     Float diff = (m.getTrainingValue() - m.getEstimatedValue());
                     Float newWeight =  apr.getWeight() + ((ADJUSTMENT_MODIFIER * diff) * (apr.appraise(m)/apr.getWeight()));
                     log.debug("apt:{}\tT:{} E:{} D:{} W:{} -> {}",apr.getClass().getSimpleName(), m.getTrainingValue(),m.getEstimatedValue(),diff,apr.getWeight(),newWeight);
+                    if(newWeight == 0)
+                        newWeight = 0.00001f;
                     apr.setWeight(newWeight);
                 }
             }
