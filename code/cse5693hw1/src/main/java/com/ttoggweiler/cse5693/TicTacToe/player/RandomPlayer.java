@@ -15,6 +15,35 @@ import java.util.stream.IntStream;
  */
 public class RandomPlayer extends BasePlayer
 {
+    private Random rand;
+
+    public RandomPlayer()
+    {
+        this("Rand");
+    }
+
+    public RandomPlayer(String name)
+    {
+        this(name,null);
+    }
+
+    public RandomPlayer(Long randomSeed)
+    {
+        this("Rand",randomSeed);
+    }
+
+    public RandomPlayer(String name, Long randomSeed)
+    {
+        setName(name);
+        setRandomSeed(randomSeed);
+    }
+
+    public void setRandomSeed(Long randomSeed)
+    {
+        if(randomSeed!=null)this.rand= new Random(randomSeed);
+        else this.rand = new Random();
+    }
+
     @Override
     public Move getNextMove(UUID gameId)
     {
@@ -33,9 +62,9 @@ public class RandomPlayer extends BasePlayer
 
     }
 
-    public static Move randomMove(BasePlayer player, BoardManager board)
+    public Move randomMove(BasePlayer player, BoardManager board)
     {
-        IntStream ints = new Random().ints(0, board.size());
+        IntStream ints = this.rand.ints(0, board.size());
 
 
         PrimitiveIterator.OfInt intItr = ints.iterator();

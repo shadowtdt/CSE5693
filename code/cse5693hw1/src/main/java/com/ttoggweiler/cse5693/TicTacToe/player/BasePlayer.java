@@ -14,7 +14,7 @@ import java.util.UUID;
 public abstract class BasePlayer
 {
     private UUID id = UUID.randomUUID();
-    private String name;
+    private String name = id.toString();
     HashMap<UUID, TicTacToeGame> games = new HashMap<>();
 
     public abstract Move getNextMove(UUID gameId);
@@ -35,7 +35,8 @@ public abstract class BasePlayer
 
     public void setName(String name)
     {
-        this.name = name;
+        if(name != null && !name.trim().isEmpty())
+            this.name = name;
     }
 
     public void gameStart(TicTacToeGame game)

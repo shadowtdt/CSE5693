@@ -29,8 +29,24 @@ public class MLPlayer extends BasePlayer
 
     private BoardAppraiser bApr;
 
+    public MLPlayer()
+    {
+        this("MLP",null);
+    }
+
+    public MLPlayer(String name)
+    {
+        this(name,null);
+    }
+
     public MLPlayer(BoardAppraiser apr)
     {
+        this("MLP",apr);
+    }
+
+    public MLPlayer(String name, BoardAppraiser apr)
+    {
+        setName(name);
         if(apr == null) {
             bApr = new BoardAppraiser();
             bApr.addSubAppraiser(new CornerCtApr(1,0));
@@ -45,8 +61,6 @@ public class MLPlayer extends BasePlayer
             //bApr.addSubAppraiser(new SequenceApr(0,1,1));
             bApr.initilizeAllWeights(DEFAULT_WEIGHT_VALUE);
         }
-
-
     }
 
     @Override
@@ -91,10 +105,15 @@ public class MLPlayer extends BasePlayer
         openMoves.sort(Comparator.comparingDouble(Move::getEstimatedValue));
         openMoves.forEach(m-> log.debug("Move:{}, Value:{}", Arrays.toString(m.getMove()),m.getEstimatedValue()));
 
-        Move oneOfBest = openMoves.stream().filter(m ->
-                m.getEstimatedValue() >= openMoves.get(openMoves.size()-1).getEstimatedValue())
-                .sorted(Comparator.comparing(Move::getId))
-                .findFirst().get();
+        Move oneOfBest = null;
+        try {
+            oneOfBest = openMoves.stream().filter(m ->
+                    m.getEstimatedValue() >= openMoves.get(openMoves.size()-1).getEstimatedValue())
+                    .sorted(Comparator.comparing(Move::getId))
+                    .findFirst().get();
+        } catch (Exception e) {
+            log.error("should never happen", e);
+        }
         return oneOfBest;//openMoves.get(openMoves.size()-1);
     }
 
