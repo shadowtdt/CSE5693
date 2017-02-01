@@ -8,11 +8,11 @@ package com.ttoggweiler.cse5693.appraiser;
 public abstract class BaseAppraiser<T>
 {
 
-    private float weight;
+    private Float weight;
 
-    public abstract float appraise(T input);
+    public abstract Float appraise(T input);
 
-    public float getWeight()
+    public Float getWeight()
     {
         return weight;
     }

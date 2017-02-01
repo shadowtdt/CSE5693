@@ -114,48 +114,54 @@ public class BoardManager
 
     /**
      * Determines if the line, defined by the x0,y0, x1,y1 pairs are occupied by the same player
-     * @param r0 Starting row
-     * @param c0 Starting column
-     * @param r1 Ending row
-     * @param c1 Ending column
+     * @param rowStart Starting row
+     * @param colStart Starting column
+     * @param rowEnd Ending row
+     * @param colEnd Ending column
+     * @param minMatching minimum number of matching spaces
      * @param allowEmpty allow empty spaces in sequences
      * @return MoveIndex sorted list of moves that make up a matching sequence, empty optional otherwise
      *
      */
     // TODO: ttoggweiler 1/26/17 update
-    public Optional<UUID> findMatchingInSequence(int r0, int c0, int r1, int c1, boolean allowEmpty)
+    public Optional<UUID> findMatchingInSequence(int rowStart, int colStart, int rowEnd, int colEnd, int minMatching, boolean allowEmpty)
     {
         //Check if coordinates are in the bounds of the board
-        isInBounds(r0, c0);
-        isInBounds(r1, c1);
+        isInBounds(rowStart, colStart);
+        isInBounds(rowEnd, colEnd);
 
-        int rowDelta = Math.abs(r0 - r1);
-        int colDelta = Math.abs(c0 - c1);
+        int rowDelta = Math.abs(rowStart - rowEnd);
+        int colDelta = Math.abs(colStart - colEnd);
         boolean zeroDeltaExists = (rowDelta == 0 || colDelta == 0);
         // if both row and column have deltas, than the slope must be 1 for a straight line
         if (!zeroDeltaExists && ((rowDelta + 0.0f) / colDelta) != 1.0)
             throw new IllegalArgumentException("Sequence is not a valid line");
 
         UUID playerToMatch = null;
-        int r = r0;
-        int c = c0;
+        int matchCount = 0;
+        int row = rowStart;
+        int col = colStart;
         //because slope must be one, the deltas wth be the same, rowDelta vs colDelta
         float sequenceLength = (zeroDeltaExists) ? (rowDelta + colDelta) : rowDelta;
         for (int i = 0; i <= sequenceLength; i++) {
-            Optional<UUID> oPlayer = findPlayer(r, c);
-            if(rowDelta != 0)r = (r0 < r1) ? r + 1 : r - 1;// Move the index based on the slope
-            if(colDelta != 0)c = (c0 < c1) ? c + 1 : c - 1;
+            Optional<UUID> oPlayer = findPlayer(row, col);
+            // Update row/col if there is a delta
+            if(rowDelta != 0)row = (rowStart < rowEnd) ? row + 1 : row - 1;
+            if(colDelta != 0)col = (colStart < colEnd) ? col + 1 : col - 1;
 
             if (!oPlayer.isPresent())
-                if(allowEmpty)break; // allow unoccupied spaces
+                if(allowEmpty)continue; // allow unoccupied spaces
                 else return Optional.empty(); // Quick fail if space is not occupied
             else if (playerToMatch == null)
                 playerToMatch = oPlayer.get(); // init player to match sequence
             else if (!playerToMatch.equals(oPlayer.get()))
                 return Optional.empty();// Quick fail on miss matched players
-            // occupant matches
+
+            // Occupant Matches
+            matchCount++;
         }
-        return Optional.ofNullable(playerToMatch);
+
+        return (matchCount >= minMatching)? Optional.ofNullable(playerToMatch):Optional.empty();
     }
 
     public Optional<UUID> findWinner()
@@ -163,18 +169,18 @@ public class BoardManager
         int length = size() - 1;
         for(int i = 0; i <= length; i++){
             // Check horizontals
-            if(findMatchingInSequence(i,0,i,length ,false).isPresent())
+            if(findMatchingInSequence(i,0,i,length, 3 ,false).isPresent())
                 return Optional.of(board[i][0]);
             // Check verticals
-            if(findMatchingInSequence(0,i,length,i,false).isPresent())
+            if(findMatchingInSequence(0,i,length,i,3,false).isPresent())
                 return Optional.of(board[0][i]);
         }
 
         // Check 0,0 -> N,N
-        if(findMatchingInSequence(0,0,length,length ,false).isPresent())
+        if(findMatchingInSequence(0,0,length,length,3 ,false).isPresent())
             return Optional.of(board[0][0]);
         // Check 0,N -> N,0
-        if(findMatchingInSequence(0,length,length,0,false).isPresent())
+        if(findMatchingInSequence(0,length,length,0,3,false).isPresent())
             return Optional.of(board[0][length]);
 
         return Optional.empty();

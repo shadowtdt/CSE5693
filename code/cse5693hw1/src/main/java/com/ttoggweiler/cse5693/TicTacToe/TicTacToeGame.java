@@ -23,7 +23,7 @@ public class TicTacToeGame
     private long creationTime = System.currentTimeMillis();
 
     private UUID winningPlayer = null;
-    private boolean isMinMoveThresholdMet = false;
+    //private boolean isMinMoveThresholdMet = false;
     private boolean gameStarted = false;
     private boolean gameEnded = false;
 
@@ -63,10 +63,9 @@ public class TicTacToeGame
      */
     public TicTacToeGame(int size, BasePlayer player1, BasePlayer player2, Move... initMoves)
     {
-        this(size,player1,player2);
-        if(initMoves != null)
-        {
-            for(Move m : initMoves){
+        this(size, player1, player2);
+        if (initMoves != null) {
+            for (Move m : initMoves) {
                 m.setPlayer(currentTurn.getId());
                 moveManager.makeMove(m);
                 rotatePlayers();
@@ -139,26 +138,6 @@ public class TicTacToeGame
         return new BasePlayer[]{player1, player2};
     }
 
-    /**
-     * Returns the moveManager winner if there is one
-     * this check is run every move, quick fails when there have not been enough moves to have a winner
-     * returns a known winner, otherwise only checks most recent move's row/col/dig for winning sequence
-     * @return game winner, empty optional otherwise
-     */
-    public Optional<UUID> findWinner()
-    {
-        if (winningPlayer != null) return Optional.of(winningPlayer);
-
-        if (!minMoveThresholdMet()) return Optional.empty(); // Not enough moves for there to be a winner
-
-        //Reduce search space by only checking the previous move's effected row/col/diagonal
-        if (!checkLastMoveHorizontal())
-            if (!checkLastMoveDiagonal())
-                if (!checkLastMoveVertical())
-                    return Optional.empty(); // if all checks fail there is no winner
-
-        return Optional.of(winningPlayer); // there must be a winner to get here
-    }
 
     public void startGame()
     {
@@ -169,24 +148,26 @@ public class TicTacToeGame
         log.info("Game ID: {}", id.toString());
         log.info("Player1 (X): {}", player1.getName());
         log.info("Player2 (O): {}", player2.getName());
-        if(moveManager.getCurrentMoveIndex() != 0) {
-            log.info("Loaded {} moves.", moveManager.getCurrentMoveIndex()+1);
+        if (moveManager.getCurrentMoveIndex() != 0) {
+            log.info("Loaded {} moves.", moveManager.getCurrentMoveIndex() + 1);
             log.info(boardManager.getPrettyBoardString(player1.getId()));
         }
         player1.gameStart(this);
         player2.gameStart(this);
-        while (!findWinner().isPresent() && !boardManager.getState().equals(BoardManager.BoardState.FULL)) // while no winner and non-full moveManager
+        while (!boardManager.findWinner().isPresent() && !boardManager.getState().equals(BoardManager.BoardState.FULL)) // while no winner and non-full moveManager
         {
             try {
                 // assert previous and current turn are not the same player
-                if (moveManager.findLastMove().isPresent()) assert moveManager.findLastMove().get().getPlayer() != currentTurn.getId();
+                if (moveManager.findLastMove().isPresent())
+                    assert moveManager.findLastMove().get().getPlayer() != currentTurn.getId();
 
                 Move nextMove = currentTurn.getNextMove(getId());
-                if(gameEnded)break; // Check to see if game ended while waiting for move
+                if (nextMove == null) continue;
+                if (gameEnded) break; // Check to see if game ended while waiting for move
 
                 log.debug("{} making move {}", getPlayerForId(nextMove.getPlayer()).getName(), Arrays.toString(nextMove.getMove()));
                 moveManager.makeMove(nextMove);
-                if(!nextMove.wasAccepted())log.error("Invalid move submitted");
+                if (!nextMove.wasAccepted()) log.error("Invalid move submitted");
                 log.debug(boardManager.getPrettyBoardString(player1.getId()));
                 rotatePlayers();
             } catch (Exception e) {
@@ -204,88 +185,106 @@ public class TicTacToeGame
 
     private void endGame()
     {
-        if(gameEnded)return;
+        if (gameEnded) return;
         log.info("** TicTacToe game end **");
         log.info("Game ID: {}", id.toString());
         log.info(boardManager.getPrettyBoardString(player1.getId()));
-        UUID winner = null;
+        winningPlayer = boardManager.findWinner().orElse(null);
         if (winningPlayer != null) {
-            winner = winningPlayer;
-            log.info("Winner: {}", getPlayerForId(winner).getName());
+            log.info("Winner: {}", getPlayerForId(winningPlayer).getName());
         } else if (boardManager.getState().equals(BoardManager.BoardState.FULL)) {
             log.info("Tie between players {} and {}", player1.getName(), player2.getName());
-        } else
-        {
+        } else {
             log.info("Premature game ending.");
         }
 
-        player1.gameEnded(this.getId(),winner == player1.getId());
-        player2.gameEnded(this.getId(),winner == player2.getId());
+        player1.gameEnded(this.getId(), winningPlayer == player1.getId());
+        player2.gameEnded(this.getId(), winningPlayer == player2.getId());
         gameEnded = true;
     }
     /* victory checking */
-
-    /**
-     * Reduce winning search space by first checking if there have been enough moves for a winner
-     * @return
-     */
-    private boolean minMoveThresholdMet()
-    {
-        if (!isMinMoveThresholdMet) {
-            isMinMoveThresholdMet = ((boardManager.size() * 2) - 1) <= moveManager.getCurrentMoveIndex();
-        }
-        return isMinMoveThresholdMet;
-    }
-
-    /**
-     * Checks the horizontal of the last move played for a winning state
-     * @return Optional winning player if one is found
-     */
-    private boolean checkLastMoveHorizontal()
-    {
-        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
-                new IllegalStateException("Horizontal check should always be preceded by the Min-Move-Threshold check."));
-        int row = lastMove.getMove()[0];
-        boardManager.findMatchingInSequence(row, 0, row, boardManager.size() - 1,false)
-                .ifPresent(player -> winningPlayer = player);
-        return winningPlayer != null;
-    }
-
-    /**
-     * Checks the vertical of the last move played for a winning state
-     * @return Optional winning player if one is found
-     */
-    private boolean checkLastMoveVertical()
-    {
-        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
-                new IllegalStateException("Vertical check should always be preceded by the Min-Move-Threshold check."));
-        int col = lastMove.getMove()[1];
-        boardManager.findMatchingInSequence(0, col, boardManager.size() - 1, col,false)
-                .ifPresent(player -> winningPlayer = player);
-        return winningPlayer != null;
-    }
-
-    /**
-     * Checks the diagonal of the last move played for a winning state
-     * @return Optional winning player if one is found
-     */
-    private boolean checkLastMoveDiagonal()
-    {
-        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
-                new IllegalStateException("Diagonal check should always be preceded by the Min-Move-Threshold check."));
-        int row = lastMove.getMove()[0];
-        int col = lastMove.getMove()[1];
-        int size = boardManager.size() - 1;
-        // Quick fail if the last move was not on a diagonal
-        if (row - col == 0) //  0,0 -> N,N diagonal
-            boardManager.findMatchingInSequence(0, 0, size, size,false)
-                    .ifPresent(moves -> winningPlayer = moves);
-        else if (row + col == boardManager.size() - 1) // 0,N -> N,0 diagonal ||
-            boardManager.findMatchingInSequence(0, size, size, 0,false)
-                    .ifPresent(moves -> winningPlayer = moves);
-
-        return winningPlayer != null;
-    }
+//    /**
+//     * Returns the moveManager winner if there is one
+//     * this check is run every move, quick fails when there have not been enough moves to have a winner
+//     * returns a known winner, otherwise only checks most recent move's row/col/dig for winning sequence
+//     * @return game winner, empty optional otherwise
+//     */
+//    public Optional<UUID> findWinner()
+//    {
+//        if (winningPlayer != null) return Optional.of(winningPlayer);
+//
+//        if (!minMoveThresholdMet()) return Optional.empty(); // Not enough moves for there to be a winner
+//
+//        //Reduce search space by only checking the previous move's effected row/col/diagonal
+//        if (!checkLastMoveHorizontal())
+//            if (!checkLastMoveVertical())
+//                if (!checkLastMoveDiagonal())
+//                    return Optional.empty(); // if all checks fail there is no winner
+//
+//        return Optional.of(winningPlayer); // there must be a winner to get here
+//    }
+//
+//    /**
+//     * Reduce winning search space by first checking if there have been enough moves for a winner
+//     * @return
+//     */
+//    private boolean minMoveThresholdMet()
+//    {
+//        if (!isMinMoveThresholdMet) {
+//            isMinMoveThresholdMet = ((boardManager.size() * 2) - 1) <= moveManager.getCurrentMoveIndex();
+//        }
+//        return isMinMoveThresholdMet;
+//    }
+//
+//    /**
+//     * Checks the horizontal of the last move played for a winning state
+//     * @return Optional winning player if one is found
+//     */
+//    private boolean checkLastMoveHorizontal()
+//    {
+//        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
+//                new IllegalStateException("Horizontal check should always be preceded by the Min-Move-Threshold check."));
+//        int row = lastMove.getMove()[0];
+//        boardManager.findMatchingInSequence(row, 0, row, boardManager.size() - 1, 3, false)
+//                .ifPresent(player -> winningPlayer = player);
+//        return winningPlayer != null;
+//    }
+//
+//    /**
+//     * Checks the vertical of the last move played for a winning state
+//     * @return Optional winning player if one is found
+//     */
+//    private boolean checkLastMoveVertical()
+//    {
+//        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
+//                new IllegalStateException("Vertical check should always be preceded by the Min-Move-Threshold check."));
+//        int col = lastMove.getMove()[1];
+//        boardManager.findMatchingInSequence(0, col, boardManager.size() - 1, col, 3, false)
+//                .ifPresent(player -> winningPlayer = player);
+//        return winningPlayer != null;
+//    }
+//
+//    /**
+//     * Checks the diagonal of the last move played for a winning state
+//     * @return Optional winning player if one is found
+//     */
+//    private boolean checkLastMoveDiagonal()
+//    {
+//        Move lastMove = moveManager.findLastMove().orElseThrow(() ->
+//                new IllegalStateException("Diagonal check should always be preceded by the Min-Move-Threshold check."));
+//        int row = lastMove.getMove()[0];
+//        int col = lastMove.getMove()[1];
+//        int size = boardManager.size() - 1;
+//        // Quick fail if the last move was not on a diagonal
+//        if (row - col == 0) //  0,0 -> N,N diagonal
+//            boardManager.findMatchingInSequence(0, 0, size, size, 3, false)
+//                    .ifPresent(moves -> winningPlayer = moves);
+//        else if (row + col == boardManager.size() - 1) // 0,N -> N,0 diagonal ||
+//            boardManager.findMatchingInSequence(0, size, size, 0, 3, false)
+//                    .ifPresent(moves -> winningPlayer = moves);
+//
+//        return winningPlayer != null;
+//    }
 
     /**
      * Checks for null values and sets names for those players who do not have one set
@@ -300,19 +299,20 @@ public class TicTacToeGame
 
     private BasePlayer rotatePlayers()
     {
-        if(currentTurn == null)currentTurn = player1; // if null assume it is player1's turn
+        if (currentTurn == null) currentTurn = player1; // if null assume it is player1's turn
         else moveManager.findLastMove().ifPresent(m -> // get last move
-                currentTurn = (m.getPlayer().equals(player1.getId())? // compare previous move with player1 id
-                        player2:player1));// it matching, player2's turn, else it is player1's
+                currentTurn = (m.getPlayer().equals(player1.getId()) ? // compare previous move with player1 id
+                        player2 : player1));// it matching, player2's turn, else it is player1's
         return currentTurn;
     }
 
     private BasePlayer getPlayerForId(UUID id)
     {
         if (id == null) throw new NullPointerException("Failed to get player for null ID");
-        if(player1.getId().equals(id))return player1;
-        else if(player2.getId().equals(id))return player1;
-        else throw new IllegalArgumentException("No player with ID: "+id.toString()+" exists for game "+ getId().toString());
+        if (player1.getId().equals(id)) return player1;
+        else if (player2.getId().equals(id)) return player2;
+        else
+            throw new IllegalArgumentException("No player with ID: " + id.toString() + " exists for game " + getId().toString());
 
     }
 

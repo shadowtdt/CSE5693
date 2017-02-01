@@ -15,29 +15,33 @@ import java.util.UUID;
 public class BoardAppraiser extends AggregateAppraiser<Move>
 {
 
-    public static final int LOST_GAME_VALUE = -100;
-    public static final int WON_GAME_VALUE = 100;
-    public static final int TIE_GAME_VALUE = 10;
+    public static final Float LOST_GAME_VALUE = -100f;
+    public static final Float WON_GAME_VALUE = 100f;
+    public static final Float TIE_GAME_VALUE = 10f;
 
     @Override
-    public float appraise(Move input)
+    public Float appraise(Move input)
     {
         // Check if board has a winner
         BoardManager bm = new BoardManager(input.getBoard());
         Optional<UUID> winner = bm.findWinner();
+        Float value = 0f;
         if (bm.findWinner().isPresent()) {
             if (winner.get().equals(input.getPlayer()))
-                return WON_GAME_VALUE;
+                value = WON_GAME_VALUE;
             else
-                return LOST_GAME_VALUE;
+                value = LOST_GAME_VALUE;
         } else if (bm.getState().equals(BoardManager.BoardState.FULL)) {
-            return TIE_GAME_VALUE;
+            value = TIE_GAME_VALUE;
         } else { // Otherwise summation of the sub-appraisers
-            float value = 0f;
             for (BaseAppraiser<Move> appraiser : getSubAppraisers())
                 value += appraiser.appraise(input);
-            return getWeight() + value;
+            value = getWeight() + value;
         }
+        if(value < LOST_GAME_VALUE) value = LOST_GAME_VALUE;
+        if(value > WON_GAME_VALUE) value = WON_GAME_VALUE;
+        input.setEstimatedValue(value);
+        return value;
     }
 
 }

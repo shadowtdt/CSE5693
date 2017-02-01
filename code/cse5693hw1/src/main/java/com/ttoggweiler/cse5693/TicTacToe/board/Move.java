@@ -19,8 +19,8 @@ public class Move
 
 
     private UUID player; // the player making the move
-    private float estimatedValue = 0;
-    private float trainingValue = 0;
+    private Float estimatedValue;
+    private Float trainingValue;
 
     private int[] move; // the coordinates of the move
     private UUID[][] board; // board after move was made
@@ -128,22 +128,22 @@ public class Move
         return rejectionCause;
     }
 
-    public float getEstimatedValue()
+    public Float getEstimatedValue()
     {
         return estimatedValue;
     }
 
-    public void setEstimatedValue(float estimatedValue)
+    public void setEstimatedValue(Float estimatedValue)
     {
         this.estimatedValue = estimatedValue;
     }
 
-    public float getTrainingValue()
+    public Float getTrainingValue()
     {
         return trainingValue;
     }
 
-    public void setTrainingValue(float trainingValue)
+    public void setTrainingValue(Float trainingValue)
     {
         this.trainingValue = trainingValue;
     }

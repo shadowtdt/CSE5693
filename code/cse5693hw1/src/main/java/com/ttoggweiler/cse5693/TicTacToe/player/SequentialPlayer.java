@@ -12,6 +12,16 @@ import java.util.UUID;
  */
 public class SequentialPlayer extends BasePlayer
 {
+    public SequentialPlayer()
+    {
+        this.setName("Seq");
+    }
+
+    public SequentialPlayer(String name)
+    {
+        setName(name);
+    }
+
     @Override
     public Move getNextMove(UUID gameId)
     {
