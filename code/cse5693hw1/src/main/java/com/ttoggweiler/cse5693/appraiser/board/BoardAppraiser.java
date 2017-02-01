@@ -38,8 +38,10 @@ public class BoardAppraiser extends AggregateAppraiser<Move>
                 value += appraiser.appraise(input);
             value = getWeight() + value;
         }
-        if(value < LOST_GAME_VALUE) value = LOST_GAME_VALUE;
-        if(value > WON_GAME_VALUE) value = WON_GAME_VALUE;
+        if(value < LOST_GAME_VALUE)
+            value = LOST_GAME_VALUE;
+        if(value > WON_GAME_VALUE)
+            value = WON_GAME_VALUE;
         input.setEstimatedValue(value);
         return value;
     }

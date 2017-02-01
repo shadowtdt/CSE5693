@@ -29,8 +29,8 @@ public class TTTGameRunner
         log.info("==== Tic-Tac-Toe Game Runner ====");
         BasePlayer winner = null;
 
-        //winner = MLPvsMLP(3,100,null, winner);
-        winner = MLPvsRand(3,50,null,winner);
+        winner = MLPvsRand(3,100,null,winner);
+        winner = MLPvsMLP(3,100,null, winner);
        // playGames(winner, new CommandLinePlayer("TDT"),3,3,null);
         //randomVsSequential(3, 100, null);
         //humanVsHuman(3,99,null);
@@ -62,7 +62,7 @@ public class TTTGameRunner
             UUID winnerID = game.getBoardManager().findWinner().orElse(tie.getId());
             String winnerName;
             if(winnerID.equals(player1.getId()))winnerName = player1.getName();
-            else if(winnerID.equals(player2.getId()))winnerName = player1.getName();
+            else if(winnerID.equals(player2.getId()))winnerName = player2.getName();
             else winnerName = tie.getName();
 
             int score = scoreChart.get(winnerName);
@@ -81,10 +81,6 @@ public class TTTGameRunner
     {
         BasePlayer p1 = new RandomPlayer();
         BasePlayer p2 = new SequentialPlayer();
-
-        p1.setName("Rand");
-        p2.setName("Sequ");
-
         return playGames(p1, p2, boardSize, iterations, initMoves);
     }
 
@@ -98,22 +94,14 @@ public class TTTGameRunner
     private static BasePlayer MLPvsRand(int boardSize, int iterations, Set<Move[]> initMoves, BasePlayer ai)
     {
         BasePlayer p1 = new RandomPlayer();
-        BasePlayer p2 =  (ai == null)? new MLPlayer(null):ai;
-
-        p1.setName("Rand");
-        p2.setName("AI");
-
+        BasePlayer p2 =  (ai == null)? new MLPlayer("MLPvRand"):ai;
         return playGames(p1, p2, boardSize, iterations, initMoves);
     }
 
     private static BasePlayer MLPvsMLP(int boardSize, int iterations, Set<Move[]> initMoves, BasePlayer ai)
     {
-        BasePlayer p1 = new MLPlayer(null);
-        BasePlayer p2 = (ai == null)? new MLPlayer(null):ai;
-
-        p1.setName("AI1");
-        p2.setName("AI2");
-
+        BasePlayer p1 = new MLPlayer("MLPvMLP");
+        BasePlayer p2 = (ai == null)? new MLPlayer("MLPvMLP2"):ai;
         return playGames(p1, p2, boardSize, iterations, initMoves);
     }
 }
