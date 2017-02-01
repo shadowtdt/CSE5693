@@ -25,7 +25,9 @@ public class SequentialPlayer extends BasePlayer
     @Override
     public Move getNextMove(UUID gameId)
     {
-        return nextSequentialMove(this, getGame(gameId).getBoardManager());
+        Move m =  nextSequentialMove(getGame(gameId).getBoardManager());
+        m.setPlayer(getId());
+        return m;
     }
 
     @Override
@@ -40,12 +42,12 @@ public class SequentialPlayer extends BasePlayer
 
     }
 
-    public static Move nextSequentialMove(BasePlayer player, BoardManager board)
+    public static Move nextSequentialMove(BoardManager board)
     {
         for (int i = 0; i <= board.size() - 1; i++)
             for (int j = 0; j <= board.size() - 1; j++)
                 if (!board.isOccupied(i, j))
-                    return new Move(player.getId(), i, j);
+                    return new Move(i, j);
         assert false;
         return null;
     }

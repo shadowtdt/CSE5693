@@ -27,7 +27,7 @@ public class Move
 
     private int gameMoveIndex = -1; // the order of the move for a given game
 
-    Move(int row, int col)
+    public Move(int row, int col)
     {
         move = new int[]{row,col};
     }
@@ -38,6 +38,7 @@ public class Move
         this.player = player;
         move = new int[]{row,col};
     }
+
     public UUID getId()
     {
         return id;

@@ -6,6 +6,7 @@ import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.CommandLinePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.MLPlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.RandomPlayer;
+import com.ttoggweiler.cse5693.TicTacToe.player.RulePlayer;
 import com.ttoggweiler.cse5693.TicTacToe.player.SequentialPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +30,9 @@ public class TTTGameRunner
         log.info("==== Tic-Tac-Toe Game Runner ====");
         BasePlayer winner = null;
 
-        winner = MLPvsRand(3,100,null,winner);
-        winner = MLPvsMLP(3,100,null, winner);
-       // playGames(winner, new CommandLinePlayer("TDT"),3,3,null);
+        //winner = MLPvsRand(3,100,null,winner);
+        //winner = MLPvsMLP(3,100,null, winner);
+        playGames(new RulePlayer(), new MLPlayer(),3,100,null);
         //randomVsSequential(3, 100, null);
         //humanVsHuman(3,99,null);
     }
