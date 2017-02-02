@@ -15,7 +15,7 @@ import java.util.ListIterator;
 public class TTTExpGeneralizer
 {
 
-    public static final Float ADJUSTMENT_MODIFIER = 0.1F;
+    public static final Float LEARNING_RATE = 0.1F;
     private static Logger log = LoggerFactory.getLogger(TTTExpGeneralizer.class);
 
 
@@ -32,7 +32,7 @@ public class TTTExpGeneralizer
                 for(BaseAppraiser apr : appraiser.getSubAppraisers())
                 {
                     Float diff = (m.getTrainingValue() - m.getEstimatedValue());
-                    Float newWeight =  apr.getWeight() + ((ADJUSTMENT_MODIFIER * diff) * (apr.appraise(m)/apr.getWeight()));
+                    Float newWeight =  apr.getWeight() + ((LEARNING_RATE * diff) * (apr.appraise(m)/apr.getWeight()));
                     log.debug("apt:{}\tT:{} E:{} D:{} W:{} -> {}",apr.getClass().getSimpleName(), m.getTrainingValue(),m.getEstimatedValue(),diff,apr.getWeight(),newWeight);
                     if(newWeight == 0)
                         newWeight = 0.00001f;

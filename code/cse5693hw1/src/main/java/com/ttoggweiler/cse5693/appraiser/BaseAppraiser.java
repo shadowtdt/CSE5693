@@ -9,6 +9,7 @@ public abstract class BaseAppraiser<T>
 {
 
     private Float weight;
+    private String name = this.getClass().getSimpleName();
 
     public abstract Float appraise(T input);
 
@@ -20,5 +21,11 @@ public abstract class BaseAppraiser<T>
     public void setWeight(float weight)
     {
         this.weight = weight;
+    }
+
+    public void setName(String name)
+    {
+        if(name != null && name.trim().isEmpty())
+            this.name = name;
     }
 }

@@ -34,6 +34,7 @@ public class CommandLinePlayer extends BasePlayer
     @Override
     public Move getNextMove(UUID gameId)
     {
+        System.out.println(getGame(gameId).getBoardManager().getPrettyBoardString(getId()));
         return getMoveFromUser(getGame(gameId));
     }
 
@@ -109,13 +110,24 @@ public class CommandLinePlayer extends BasePlayer
         return m;
     }
 
+    public boolean continuePlayingGames()
+    {
+        while (true) {
+            System.out.println("Would you like to continue playing games? Y | N");
+            String input = keyboard.nextLine();
+            if (input == null || input.trim().isEmpty()){}
+            else if (input.toLowerCase().contains("y")) return true;
+            else if (input.toLowerCase().contains("n")) return false;
+        }
+    }
+
     private static void printCmds()
     {
         System.out.println("======== Commands ========");
-        System.out.println("Move:        row,col (0,2)");
-        System.out.println("Quit game:   quit (q)");
-        System.out.println("Print board: print (p)");
-        System.out.println("help:        help (h)");
+        System.out.println("Make Move:      row,col  ie: 0,2");
+        System.out.println("Quit game:      quit (q)");
+        System.out.println("Print board:    print (p)");
+        System.out.println("help:           help (h)");
     }
 
 

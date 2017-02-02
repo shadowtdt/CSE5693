@@ -24,7 +24,7 @@ import java.util.UUID;
  */
 public class MLPlayer extends BasePlayer
 {
-    public static final Float DEFAULT_WEIGHT_VALUE = 2f;
+    public static final Float DEFAULT_WEIGHT_VALUE = 0.1f;
     private static Logger log = LoggerFactory.getLogger(MLPlayer.class);
 
     private BoardAppraiser bApr;
@@ -49,16 +49,28 @@ public class MLPlayer extends BasePlayer
         setName(name);
         if(apr == null) {
             bApr = new BoardAppraiser();
-            bApr.addSubAppraiser(new CornerCtApr(1,0));
-            bApr.addSubAppraiser(new CornerCtApr(0,1));
+            CornerCtApr mCenter = new CornerCtApr(1,0);
+            mCenter.setName("MyCenter");
+            bApr.addSubAppraiser(mCenter);
 
-            bApr.addSubAppraiser(new SequenceApr(1,0,2));
-            bApr.addSubAppraiser(new SequenceApr(0,1,2));
+            CornerCtApr oCenter = new CornerCtApr(0,1);
+            oCenter.setName("OppCenter");
+            bApr.addSubAppraiser(oCenter);
+
+            SequenceApr myTwoRow = new SequenceApr(1,0,2);
+            myTwoRow.setName("My2inRow");
+            bApr.addSubAppraiser(myTwoRow);
+
+            SequenceApr oppTwoRow =new SequenceApr(1,0,2);
+            oppTwoRow.setName("Opp2inRow");
+            bApr.addSubAppraiser(oppTwoRow);
 
             bApr.addSubAppraiser(new SequenceApr(1,0,1));
+
             bApr.addSubAppraiser(new SequenceApr(0,1,1));
 
             bApr.addSubAppraiser(new CentSpotApt(0,1));
+
             bApr.addSubAppraiser(new CentSpotApt(1,0));
 
             bApr.initilizeAllWeights(DEFAULT_WEIGHT_VALUE);
@@ -140,4 +152,5 @@ public class MLPlayer extends BasePlayer
                 ,previousWeights.get(apr.getClass().getSimpleName())
                 ,apr.getWeight()));
     }
+
 }
