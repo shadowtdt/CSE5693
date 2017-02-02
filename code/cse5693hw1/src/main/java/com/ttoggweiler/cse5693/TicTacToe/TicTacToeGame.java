@@ -154,7 +154,7 @@ public class TicTacToeGame
         }
         player1.gameStart(this);
         player2.gameStart(this);
-        while (!boardManager.findWinner().isPresent() && !boardManager.getState().equals(BoardManager.BoardState.FULL)) // while no winner and non-full moveManager
+        while (!boardManager.findWinner().isPresent() && !boardManager.getState().equals(BoardManager.BoardState.FULL) && !gameEnded) // while no winner and non-full moveManager
         {
             try {
                 // assert previous and current turn are not the same player
@@ -186,9 +186,12 @@ public class TicTacToeGame
     private void endGame()
     {
         if (gameEnded) return;
+        gameEnded = true;
+
         log.info("** TicTacToe game end **");
         log.info("Game ID: {}", id.toString());
         log.info(boardManager.getPrettyBoardString(player1.getId()));
+
         winningPlayer = boardManager.findWinner().orElse(null);
         if (winningPlayer != null) {
             log.info("Winner: {}", getPlayerForId(winningPlayer).getName());
@@ -196,11 +199,11 @@ public class TicTacToeGame
             log.info("Tie between players {} and {}", player1.getName(), player2.getName());
         } else {
             log.info("Premature game ending.");
+            return;
         }
 
         player1.gameEnded(this.getId(), winningPlayer == player1.getId());
         player2.gameEnded(this.getId(), winningPlayer == player2.getId());
-        gameEnded = true;
     }
     /* victory checking */
 //    /**
