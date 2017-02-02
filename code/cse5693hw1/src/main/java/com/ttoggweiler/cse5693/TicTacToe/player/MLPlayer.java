@@ -50,15 +50,17 @@ public class MLPlayer extends BasePlayer
         if(apr == null) {
             bApr = new BoardAppraiser();
             bApr.addSubAppraiser(new CornerCtApr(1,0));
-            //bApr.addSubAppraiser(new CornerCtApr(0,1));
+            bApr.addSubAppraiser(new CornerCtApr(0,1));
 
             bApr.addSubAppraiser(new SequenceApr(1,0,2));
             bApr.addSubAppraiser(new SequenceApr(0,1,2));
 
+            bApr.addSubAppraiser(new SequenceApr(1,0,1));
+            bApr.addSubAppraiser(new SequenceApr(0,1,1));
+
             bApr.addSubAppraiser(new CentSpotApt(0,1));
-            //bApr.addSubAppraiser(new CentSpotApt(1,0));
-            //bApr.addSubAppraiser(new SequenceApr(1,0,1));
-            //bApr.addSubAppraiser(new SequenceApr(0,1,1));
+            bApr.addSubAppraiser(new CentSpotApt(1,0));
+
             bApr.initilizeAllWeights(DEFAULT_WEIGHT_VALUE);
         }
     }
@@ -105,6 +107,7 @@ public class MLPlayer extends BasePlayer
         openMoves.sort(Comparator.comparingDouble(Move::getEstimatedValue));
         openMoves.forEach(m-> log.debug("Move:{}, Value:{}", Arrays.toString(m.getMove()),m.getEstimatedValue()));
 
+        if(openMoves.size() == 1)return openMoves.get(0);
         Move oneOfBest = null;
         try {
             oneOfBest = openMoves.stream().filter(m ->
@@ -132,7 +135,7 @@ public class MLPlayer extends BasePlayer
 
         TTTExpGeneralizer.updateAppraiser(trace,bApr);
 
-        bApr.getSubAppraisers().forEach(apr -> log.debug("{}: {} --> {}"
+        bApr.getSubAppraisers().forEach(apr -> log.info("{}: {} --> {}"
                 , apr.getClass().getSimpleName()
                 ,previousWeights.get(apr.getClass().getSimpleName())
                 ,apr.getWeight()));
