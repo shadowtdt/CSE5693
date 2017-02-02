@@ -2,6 +2,8 @@ package com.ttoggweiler.cse5693.TicTacToe.board;
 
 import com.ttoggweiler.cse5693.TicTacToe.player.BasePlayer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -148,19 +150,31 @@ public class Move
     {
         this.trainingValue = trainingValue;
     }
+
     public String toString()
     {
-        return "("+move[0]+","+move[1]+")";
+        return move[0]+":"+move[1];
     }
-//    @Override
-//    public int compare(Move o1, Move o2)
-//    {
-//        if(o1.getGameMoveIndex() != -1 || o2.getGameMoveIndex() != -1)
-//            return o1.getGameMoveIndex() - o2.getGameMoveIndex();
-//        else if(o1.getPlayerMoveIndex() != -1 || o2.getPlayerMoveIndex() != -1)
-//            return o1.getPlayerMoveIndex() - o2.getPlayerMoveIndex();
-//        else if(o1.getMoveTime() != -1 || o2.getMoveTime() != -1)
-//            return thenComparingLong(Move::getMoveTime);
-//
-//    }
+
+    public static Move parse(String moveString)
+    {
+        String[] coordinates = moveString.split(":");
+        if (coordinates.length != 2)
+            throw new IllegalArgumentException("Incorrect number of coordinates found in: " + moveString);
+        int rCoord = Integer.parseInt(coordinates[0].trim());
+        int cCoord = Integer.parseInt(coordinates[1].trim());
+        return new Move(rCoord,cCoord);
+    }
+
+    public static void main(String[] args)
+    {
+        String a = "a";
+        String b = "b";
+        ArrayList<String> list = new ArrayList<>();
+        list.add(a);
+        list.add(b);
+
+
+        System.out.println(list.toString());
+    }
 }
