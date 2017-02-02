@@ -5,6 +5,8 @@ import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -52,7 +54,7 @@ public class CommandLinePlayer extends BasePlayer
     {
         while(true)
         {
-            log.info("Please provide player name:");
+            System.out.println("Please provide player name:");
             String input = keyboard.nextLine();
             if (input == null || input.trim().isEmpty()) continue;
             return input;
@@ -67,13 +69,13 @@ public class CommandLinePlayer extends BasePlayer
 
         Move m = null;
         while (!valid) {
-            log.info("Player {} turn, input next move:", getName());
+            System.out.println("Player {} turn, input next move:"+ getName());
             String input = keyboard.nextLine();
             if (input == null || input.trim().isEmpty()) continue;
 
             if (input.contains(",")) {
                 String[] coords = input.split(",");
-                if (coords.length != 2) log.warn("Incorrect number of coordinates found in: {}" , input);
+                if (coords.length != 2) System.err.println("Incorrect number of coordinates found in: " + input);
                 int rCoord = Integer.parseInt(coords[0].trim());
                 int cCoord = Integer.parseInt(coords[1].trim());
                 m = new Move(getId(),rCoord,cCoord);
@@ -81,13 +83,13 @@ public class CommandLinePlayer extends BasePlayer
 
                 if(!valid)
                 {
-                    log.warn("Invalid move: {}",m.getRejectionCause().toString());
+                    System.err.println(("Invalid move: "+m.getRejectionCause().toString()));
                 }
             } else {
                 switch (input.trim().toLowerCase()) {
                     case "print":
                     case "p":
-                        log.info(game.getBoardManager().getPrettyBoardString(startingPlayer));
+                        System.out.println(game.getBoardManager().getPrettyBoardString(startingPlayer));
                         break;
                     case "quit":
                     case "q":
@@ -98,7 +100,7 @@ public class CommandLinePlayer extends BasePlayer
                         printCmds();
                         break;
                     default:
-                        log.warn("Unknown command received");
+                        System.err.println("Unknown command received");
                         printCmds();
                         break;
                 }
@@ -109,11 +111,12 @@ public class CommandLinePlayer extends BasePlayer
 
     private static void printCmds()
     {
-        log.info("======== Commands ========");
-        log.info("Move:        row,col (0,2)");
-        log.info("Quit game:   quit (q)");
-        log.info("Print board: print (p)");
-        log.info("help:        help (h)");
+        System.out.println("======== Commands ========");
+        System.out.println("Move:        row,col (0,2)");
+        System.out.println("Quit game:   quit (q)");
+        System.out.println("Print board: print (p)");
+        System.out.println("help:        help (h)");
     }
+
 
 }
