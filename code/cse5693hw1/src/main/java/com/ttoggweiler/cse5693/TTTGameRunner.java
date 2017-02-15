@@ -30,14 +30,15 @@ public class TTTGameRunner
     public static void main(String... args)
     {
         log.info("==== Tic-Tac-Toe Game Runner ====");
-
-        MLPlayer mlp = parseMainArgs(args);
+        MLPlayer mlp = null;
+        if(args.length > 0) mlp = parseMainArgs(args);
         if(mlp != null)
         {
+            System.out.println("Finished training, starting game with CommandLinePlayer Vs " + mlp.getName());
             playGames(mlp,new CommandLinePlayer(),3,-1,null);
         }
 
-        // MLPlayer ai = new MLPlayer("AI");
+        //MLPlayer ai = new MLPlayer("AI");
         // MLPvsRand(3,100,null,ai);
         // winner = MLPvsMLP(3,100,null, winner);
         //playGames(new RulePlayer("R1"), new RulePlayer("R2"), 3, 100, null);
@@ -64,7 +65,8 @@ public class TTTGameRunner
 
         BasePlayer tmp;
         Iterator<Move[]> initItr = initMoves.iterator();
-        for (int i = 0; i != iterations; i++) {
+        int gameNumber;
+        for ( gameNumber = 1; gameNumber != iterations; gameNumber++) {
             Move[] initMove = (initItr.hasNext()) ? initItr.next() : null;
             TicTacToeGame game = new TicTacToeGame(boardSize, player1, player2, initMove);
             game.startGame();
@@ -82,14 +84,14 @@ public class TTTGameRunner
             int traceCount = traceMap.getOrDefault(traceString, 0);
             traceMap.put(traceString, traceCount + 1);
             scoreChart.put(winnerName, ++score);
-            log.warn("Game:{} Stats:{} Trace:{} #{}", i, scoreChart.toString(), traceString, traceCount);
+            log.info("Game:{} Stats:{} Trace:{} #{}", gameNumber, scoreChart.toString(), traceString, traceCount);
 
             // Rotate first player
             tmp = player1;
             player1 = player2;
             player2 = tmp;
 
-            if(iterations < 0 && !continuePlaying(player1,player2))
+            if(!continuePlaying(player1,player2))
                 break;
         }
         Float p1Ratio = (scoreChart.get(player1.getName()) + 0f) / iterations;
@@ -102,12 +104,13 @@ public class TTTGameRunner
 
         int uniqueGames = traceMap.size();
         Float uniqueRatio = (uniqueGames + 0f) / iterations;
-        log.warn("\n{}: {} ({}%)\n{}: {} ({}%)\n{}: {} ({}%)\nUnique: {} ({}%)"
+        log.info("\n**** Stats for {} games, Unique: {} ({}%) ****\n{}: {} ({}%)\n{}: {} ({}%)\n{}: {} ({}%)\n"
+                ,gameNumber , uniqueGames, uniqueRatio * 100
                 , player1.getName(), p1Count, p1Ratio * 100
                 , player2.getName(), p2Count, p2Ratio * 100
-                , tie.getName(), tieCount, tieRatio * 100
-                , uniqueGames, uniqueRatio * 100);
+                , tie.getName(), tieCount, tieRatio * 100);
 
+        //traceMap.keySet().forEach(log::warn);
         return (scoreChart.get(player1.getName()) > scoreChart.get(player2.getName())) ? player1 : player2;
     }
 
@@ -185,7 +188,7 @@ public class TTTGameRunner
     private static MLPlayer parseMainArgs(String... args)
     {
         MLPlayer mlp = new MLPlayer();
-        int iterations = 50;
+        int iterations = 100;
         int boardSize = 3;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];

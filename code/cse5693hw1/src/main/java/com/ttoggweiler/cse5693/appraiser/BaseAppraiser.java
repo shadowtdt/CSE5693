@@ -25,7 +25,9 @@ public abstract class BaseAppraiser<T>
 
     public void setName(String name)
     {
-        if(name != null && name.trim().isEmpty())
+        if (name != null && !name.trim().isEmpty())
             this.name = name;
     }
+
+    public String getName(){return this.name;}
 }

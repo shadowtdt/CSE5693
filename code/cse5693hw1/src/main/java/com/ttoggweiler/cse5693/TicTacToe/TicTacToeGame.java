@@ -144,8 +144,7 @@ public class TicTacToeGame
         assert !gameStarted;
         gameStarted = true;
 
-        log.info("** Starting TicTacToe game **");
-        log.info("Game ID: {}", id.toString());
+        log.info("** Starting TicTacToe game ID: {} **",id.toString());
         log.info("Player1 (X): {}", player1.getName());
         log.info("Player2 (O): {}", player2.getName());
         if (moveManager.getCurrentMoveIndex() != 0) {
@@ -188,15 +187,14 @@ public class TicTacToeGame
         if (gameEnded) return;
         gameEnded = true;
 
-        log.info("** TicTacToe game end **");
-        log.info("Game ID: {}", id.toString());
-        log.info(boardManager.getPrettyBoardString(player1.getId()));
+        log.info("** TicTacToe game end ID: {} **",id.toString());
+        String board = boardManager.getPrettyBoardString(player1.getId());
 
         winningPlayer = boardManager.findWinner().orElse(null);
         if (winningPlayer != null) {
-            log.info("Winner: {}", getPlayerForId(winningPlayer).getName());
+            log.info("Winner: {}" + board, getPlayerForId(winningPlayer).getName());
         } else if (boardManager.getState().equals(BoardManager.BoardState.FULL)) {
-            log.info("Tie between players {} and {}", player1.getName(), player2.getName());
+            log.info("Tie: {} and {}" + board, player1.getName(), player2.getName());
         } else {
             log.info("Premature game ending.");
             return;

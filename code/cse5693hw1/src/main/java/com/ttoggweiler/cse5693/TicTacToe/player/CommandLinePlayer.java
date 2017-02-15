@@ -4,9 +4,6 @@ import com.ttoggweiler.cse5693.TicTacToe.TicTacToeGame;
 import com.ttoggweiler.cse5693.TicTacToe.board.Move;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -70,7 +67,7 @@ public class CommandLinePlayer extends BasePlayer
 
         Move m = null;
         while (!valid) {
-            System.out.println("Player {} turn, input next move:"+ getName());
+            System.out.println("Player "+getName()+"'s turn, input next move:");
             String input = keyboard.nextLine();
             if (input == null || input.trim().isEmpty()) continue;
 
@@ -101,7 +98,7 @@ public class CommandLinePlayer extends BasePlayer
                         printCmds();
                         break;
                     default:
-                        System.err.println("Unknown command received");
+                        System.err.println("Unknown command received!");
                         printCmds();
                         break;
                 }
@@ -124,7 +121,7 @@ public class CommandLinePlayer extends BasePlayer
     private static void printCmds()
     {
         System.out.println("======== Commands ========");
-        System.out.println("Make Move:      row,col  ie: 0,2");
+        System.out.println("Make Move:      row,col  ie: 0,0 = Top Left");
         System.out.println("Quit game:      quit (q)");
         System.out.println("Print board:    print (p)");
         System.out.println("help:           help (h)");

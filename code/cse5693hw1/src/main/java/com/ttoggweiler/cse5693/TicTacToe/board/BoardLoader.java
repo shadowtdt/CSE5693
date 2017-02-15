@@ -87,7 +87,7 @@ public class BoardLoader
             if (m.getMove()[1]  > maxValue) maxValue = m.getMove()[1] ;
             parsedMoves[i] = m;
         }
-        if (moves.length > (++maxValue * 2))
+        if (moves.length > (++maxValue * 3))
             throw new IllegalArgumentException("More moves that spaces detected in: " + moveArrayString);
         return parsedMoves;
     }
