@@ -14,5 +14,8 @@ public class DecisionTreeRunner
     public static void main(String[] args)
     {
         log.info("=== CSE5693-Hw2 Decision Tree Runner ====");
+
+
+        int i = Integer.parseInt("0.1");
     }
 }
