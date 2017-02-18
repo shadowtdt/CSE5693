@@ -29,21 +29,25 @@ public class DataLoader
      * @return A set of features
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Map<String, String>> loadDataFromPath(Path path, List<Feature> featureSet) throws IOException
+    public static List<Map<String, Comparable>> loadDataFromPath(Path path, List<Feature> featureSet) throws IOException
     {
         if (path == null) throw new NullPointerException("Unable to load features from a null path");
         List<String> lines = Files.lines(path)
                 .filter(PreCheck::notEmpty)
                 .collect(Collectors.toList());
 
-        List<Map<String, String>> data = new ArrayList<>();
+        List<Map<String, Comparable>> data = new ArrayList<>();
         // For each example
         for (String line : lines) {
             String[] splitLine = line.trim().split(" ");
             if (splitLine.length != featureSet.size()) throw new IllegalArgumentException("Data line does not have correct number of features: " + line);
-            Map<String, String> dataMap = new HashMap<>();
+            Map<String, Comparable> dataMap = new HashMap<>();
             // for each value in example
-            for (int i = 0; i < featureSet.size(); i++) dataMap.put(featureSet.get(i).getName(), splitLine[i]);
+            for (int i = 0; i < featureSet.size(); i++){
+                Feature feature = featureSet.get(i);
+                Comparable featureValue = (Comparable) feature.parseValue(splitLine[i]).orElse("");
+                dataMap.put(featureSet.get(i).getName(), featureValue);
+            }
             data.add(dataMap);
         }
         return data;
@@ -55,7 +59,7 @@ public class DataLoader
      * @return A set of features parsed from the provided file
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Map<String, String>> loadDataFromFile(String pathToData, List<Feature> featureSet) throws IOException
+    public static List<Map<String, Comparable>> loadDataFromFile(String pathToData, List<Feature> featureSet) throws IOException
     {
         if (PreCheck.isEmpty(pathToData)) throw new NullPointerException("Unable to load features from a null file path string");
         URL resource = DataLoader.class.getResource(pathToData);
@@ -75,11 +79,11 @@ public class DataLoader
 
         try {
             List<Feature> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
-            List<Map<String, String>> datas = loadDataFromFile(dataFilePath,features);
+            List<Map<String, Comparable>> datas = loadDataFromFile(dataFilePath,features);
 
             log.info("Loaded {} instances: ", datas.size());
             int i =0;
-            for(Map<String,String> data : datas ){
+            for(Map<String,Comparable> data : datas ){
                 log.info("#{} Values: {}",i++, data.toString());
             }
         } catch (IOException e) {

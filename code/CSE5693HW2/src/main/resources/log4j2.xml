@@ -4,10 +4,7 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%-5level %logger{1} - %msg%n}"/>
         </Console>
-        <File name="gameLog" fileName="logs/game.log">
-            <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
-        </File>
-        <File name="gameTestLog" fileName="logs/gameTest.log">
+        <File name="gameLog" append="false" fileName="logs/game.log">
             <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
         </File>
     </Appenders>
@@ -15,11 +12,7 @@
         <Root level="warn">
             <AppenderRef ref="console"/>
         </Root>
-        <logger name="com.ttoggweiler.cse5693.test" level="debug" additivity="false">
-            <AppenderRef ref="gameTestLog" />
-            <AppenderRef ref="console" />
-        </logger>
-        <logger name="com.ttoggweiler.cse5693" level="info" additivity="false">
+        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
             <AppenderRef ref="gameLog" />
             <AppenderRef ref="console" />
         </logger>

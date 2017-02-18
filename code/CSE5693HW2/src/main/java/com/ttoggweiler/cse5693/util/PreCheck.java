@@ -231,7 +231,7 @@ public class PreCheck
     public static boolean isEmpty(Map... maps)
     {
         if (maps == null || maps.length == 0) return true;
-        for (Map m : maps) if (m.isEmpty()) return true;
+        for (Map m : maps) if (m == null || m.size() == 0 ||m.isEmpty()) return true;
         return false;
     }
 

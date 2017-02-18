@@ -37,6 +37,10 @@ public class Feature<T extends Comparable<?>>
         if (PreCheck.notEmpty(values)) this.setValues(Arrays.stream(values).collect(Collectors.toSet()));
     }
 
+    public UUID getId()
+    {
+        return id;
+    }
 
     public String getName()
     {
