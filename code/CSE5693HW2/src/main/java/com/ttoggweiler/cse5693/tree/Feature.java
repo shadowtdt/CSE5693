@@ -5,6 +5,7 @@ import com.ttoggweiler.cse5693.util.Parser;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -15,7 +16,7 @@ public class Feature<T extends Comparable<?>>
     private UUID id = UUID.randomUUID();
     private String name;
     private Parser.Type type;
-    private Set<T> values = new HashSet<>();
+    private HashMap<T, Predicate<Comparable>> values = new HashMap<T, Predicate<Comparable>>();
 
     public Feature(String name, Parser.Type type, Set<T> values)
     {
@@ -58,37 +59,30 @@ public class Feature<T extends Comparable<?>>
 
     public Set<T> getValues()
     {
-        return values;
+        return values.keySet();
     }
 
     public void setValues(Set<T> values)
     {
-        if (!PreCheck.isEmpty(values)) this.values = values;
+        if (!PreCheck.isEmpty(values)) values.forEach(this :: addValue);
     }
 
     public void addValue(T value)
     {
-        if (PreCheck.isEmpty(this.values)) this.values = new HashSet<T>();
-        if (!PreCheck.isNull(value)) this.values.add(value);
+        if (PreCheck.isEmpty(this.values)) this.values = new HashMap<T, Predicate<Comparable>>();
+        if (PreCheck.notNull(value)) {
+            if(PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING))
+                this.values.put(value,x -> value.equals(x));
+            else
+                this.values.put(value, x -> x.compareTo(value) > 0);
+        }
     }
 
     public Map<T,Integer> getValueCounts(List<Map<String, Comparable>> examples)
     {
         Map<T,Integer> valueCounts = new HashMap<T, Integer>();
-        mapValueToData(examples).forEach((k,v) -> valueCounts.put(k,v.size()));
+        getValueToDataMap(examples).forEach((k, v) -> valueCounts.put(k,v.size()));
         return valueCounts;
-//        Map<T, Integer> targetFeatureDistribution;
-//
-//        List<Map<String,Comparable>> filteredExamples = examples.stream()
-//                .filter(m -> m.containsKey(this.getName())) // Target feature is present
-//                .collect(Collectors.toList());
-//        targetFeatureDistribution = new HashMap<>();
-//        for (Map<String, Comparable> example : filteredExamples) {
-//            Comparable targetValue = example.get(this.getName());
-//            targetFeatureDistribution.putIfAbsent((T)targetValue,0);
-//            targetFeatureDistribution.compute((T)targetValue,(k,v) -> v = v+1);
-//        }
-//        return targetFeatureDistribution;
     }
 
     public Double getEntropy(List<Map<String,Comparable>> examples)
@@ -107,11 +101,11 @@ public class Feature<T extends Comparable<?>>
             entropy += (-1*matchingExampleRatio) * MoreMath.log2(matchingExampleRatio);
             entropyCalcStr += " + -"+ratioString+" log_2 " + ratioString;
         }
-        //log.debug("Entropy = {} = {}",entropy,entropyCalcStr);
+        //zlog.debug("Entropy = {} = {}",entropy,entropyCalcStr);
         return entropy;
     }
 
-    public Map<T, List<Map<String, Comparable>>> mapValueToData(List<Map<String, Comparable>> datas)
+    public Map<T, List<Map<String, Comparable>>> getValueToDataMap(List<Map<String, Comparable>> datas)
     {
         Map<T, List<Map<String, Comparable>>> valueMap = new HashMap<>();
 

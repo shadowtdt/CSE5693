@@ -55,7 +55,7 @@ public class DecisionTreeRunner
 
         Feature target = features.remove(features.size() - 1);
         FeatureNode rootNode = TreeBuilder.buildTree(target,features,trainingDatas);
-        log.info("\n"+rootNode.toTreeString());
+        log.info("\n"+rootNode.toString());
         //for(Map<String,Comparable> data : validationDatas ) log.info("#{} Classification: {}",i++, rootNode.getClassificationDistribution(data).toString());
 
         Double trainingAccuracy = Examiner.getAccuracy(target,rootNode,trainingDatas);

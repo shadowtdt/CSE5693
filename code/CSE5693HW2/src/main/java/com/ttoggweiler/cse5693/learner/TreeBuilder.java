@@ -23,9 +23,17 @@ public class TreeBuilder
     public static FeatureNode buildTree(Feature target, List<Feature> features, List<Map<String, Comparable>> trainingData)
     {
         if(PreCheck.isEmpty(features,trainingData))return null;
-        Feature feature = features.remove(0);
-        FeatureNode node = new FeatureNode(feature);
         Map<Comparable, Integer> targetFeatureDist = target.getValueCounts(trainingData);
+        if(targetFeatureDist.size() == 1)
+        {
+            FeatureNode leaf = new FeatureNode(target);
+            leaf.setTargetDistributions(targetFeatureDist);
+            return leaf;
+        }
+
+        Feature feature = getBestInfoGainFeature(target,features,trainingData);
+        features.remove(feature);
+        FeatureNode node = new FeatureNode(feature);
         node.setTargetDistributions(targetFeatureDist);
         log.info("Created node {} with Dist: {}",node.getName(),targetFeatureDist);
 
@@ -77,10 +85,11 @@ public class TreeBuilder
 
         //Double entropyForAll = getEntropy(target,trainingData);
         Double bestEntropy = 1d;
+        Comparable value = null;
         Predicate<Comparable> bestPredicate = null;
         for (Map<String, Comparable> example : trainingData) {
             Comparable valueToTest = example.get(feature.getName());
-            Predicate<Comparable> valuePredicate = (c) -> c.compareTo(valueToTest) >= 0;
+            Predicate<Comparable> valuePredicate = x -> x.compareTo(valueToTest) >= 0;
             List<Map<String,Comparable>> exampleSubSet = trainingData.stream()
                     .filter(m -> valuePredicate.test(m.get(feature.getName())))
                     .collect(Collectors.toList());
@@ -90,19 +99,35 @@ public class TreeBuilder
                 log.warn("{}= {} New best entropy: {} -> {}",feature.getName(),valueToTest,bestEntropy,entropyOfSubset);
                 bestEntropy = entropyOfSubset;
                 bestPredicate = valuePredicate;
+                value = valueToTest;
             }
         }
+        feature.addValue((Comparable<?>) value);
         return bestPredicate;
     }
 
-//    public static Feature getBestInfoGainFeature(Feature target, List<Feature> features, List<Map<String, Comparable>> datas)
-//    {
-//        Double datasEntropy = target.getEntropy(datas);
-//        Feature bestFeature = null;
-//        Double bestEntropy = 1d;
-//        for (Feature feature : features) {
-//
-//        }
-//    }
+    public static Feature getBestInfoGainFeature(Feature target, List<Feature> features, List<Map<String, Comparable>> datas)
+    {
+        Double datasEntropy = target.getEntropy(datas);
+        Feature bestFeature = null;
+        Double bestEntropy = 1d;
+        Double bestGain = 0d;
+        for (Feature feature : features) {
+            Map<Comparable, List<Map<String, Comparable>>> valueMap = feature.getValueToDataMap(datas);
+            Double featureEntropy = 0d;
+            for (Map.Entry<Comparable, List<Map<String, Comparable>>> valueEntry : valueMap.entrySet()) {
+                Double ratio = (double) valueEntry.getValue().size() / (double) datas.size();
+                Double featureValueEntropy = target.getEntropy(valueEntry.getValue());
+                featureEntropy += ratio *  featureValueEntropy;
+            }
+            Double gain = datasEntropy - featureEntropy;
+            if(bestGain < gain) {
+                bestFeature = feature;
+                bestGain = gain;
+            }
+
+        }
+        return bestFeature;
+    }
 
 }

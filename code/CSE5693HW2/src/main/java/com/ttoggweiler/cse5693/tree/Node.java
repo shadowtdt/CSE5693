@@ -135,16 +135,16 @@ public class Node<T>
         return getName();
     }
 
-    public String toTreeString()
-    {
-        String prefix = "";
-        for (int i = 1; i < distanceFromRoot(); i++) prefix += "|\t";
-        String treeStr = prefix + this.toString();
-        if (PreCheck.notEmpty(childrenNodes))
-            for (Node child : childrenNodes)
-                treeStr += "\n" + child.toTreeString();
-        return treeStr;
-    }
+//    public String toTreeString()
+//    {
+//        String prefix = "";
+//        for (int i = 1; i < distanceFromRoot(); i++) prefix += "|\t";
+//        String treeStr = prefix + this.toString();
+//        if (PreCheck.notEmpty(childrenNodes))
+//            for (Node child : childrenNodes)
+//                treeStr += "\n" + child.toTreeString();
+//        return treeStr;
+//    }
 
 
 }

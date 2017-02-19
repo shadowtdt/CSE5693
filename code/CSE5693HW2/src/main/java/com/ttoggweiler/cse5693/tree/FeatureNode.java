@@ -46,6 +46,7 @@ public class FeatureNode extends Node<Feature>
     {
         return this.parentEdgeValue;
     }
+
     public Map<Comparable,Integer> getTargetDistributions()
     {
         return targetFeatureDistribution;
@@ -75,9 +76,22 @@ public class FeatureNode extends Node<Feature>
                 .map(Map.Entry :: getKey)
                 .orElse(null);
     }
+
     public String toString()
     {
-        if(hasChildren())return getData().getName() + " = "+getParentEdgeValue();
-        else return getData().getName()+" : "+targetFeatureDistribution.toString();
+        String treeStr = "";
+        //for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
+        treeStr += getParentNode().map(n -> n.getName() + " = " + getParentEdgeValue()).orElse("Root");
+        if(PreCheck.notEmpty(edges))
+        {
+            for (Map.Entry<Predicate<Comparable>, FeatureNode> edge : edges.entrySet()) {
+                treeStr += "\n";
+
+                    for (int i = 0; i < distanceFromRoot(); i++) treeStr += "|\t";
+                    treeStr += edge.getValue().toString();
+
+            }
+            return treeStr;
+        }else return  treeStr + " : " +targetFeatureDistribution;//" : " + targetFeatureDistribution.toString();
     }
 }
