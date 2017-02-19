@@ -1,16 +1,10 @@
 package com.ttoggweiler.cse5693.tree;
 
+import com.ttoggweiler.cse5693.util.MoreMath;
 import com.ttoggweiler.cse5693.util.Parser;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Predicate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +15,7 @@ public class Feature<T extends Comparable<?>>
     private UUID id = UUID.randomUUID();
     private String name;
     private Parser.Type type;
-    private Set<T> values;
+    private Set<T> values = new HashSet<>();
 
     public Feature(String name, Parser.Type type, Set<T> values)
     {
@@ -78,6 +72,41 @@ public class Feature<T extends Comparable<?>>
         if (!PreCheck.isNull(value)) this.values.add(value);
     }
 
+    public Map<T,Integer> getValueDistribution(List<Map<String,T>> examples)
+    {
+        Map<T, Integer> targetFeatureDistribution;
+
+        List<Map<String,T>> filteredExamples = examples.stream()
+                .filter(m -> m.containsKey(this.getName())) // Target feature is present
+                .collect(Collectors.toList());
+        targetFeatureDistribution = new HashMap<>();
+        for (Map<String, T> example : filteredExamples) {
+            T targetValue = example.get(this.getName());
+            targetFeatureDistribution.putIfAbsent(targetValue,0);
+            targetFeatureDistribution.compute(targetValue,(k,v) -> v = v+1);
+        }
+        return targetFeatureDistribution;
+    }
+
+    public Double getEntropy(List<Map<String,T>> examples)
+    {
+        Double entropy = 0d;
+        Map<T,Integer> featureValueDist = this.getValueDistribution(examples);
+        Integer exampleCount = examples.size();
+
+        String entropyCalcStr = "";
+        for (Object possibleValue : this.getValues()) {
+            Integer matchingExampleCount = featureValueDist.get(possibleValue);
+            if(matchingExampleCount == null || matchingExampleCount == 0)
+                continue;
+            Double matchingExampleRatio = (double)matchingExampleCount/(double) exampleCount;
+            String ratioString = matchingExampleCount+"/"+exampleCount;
+            entropy += (-1*matchingExampleRatio) * MoreMath.log2(matchingExampleRatio);
+            entropyCalcStr += " + -"+ratioString+" log_2 " + ratioString;
+        }
+        //log.debug("Entropy = {} = {}",entropy,entropyCalcStr);
+        return entropy;
+    }
 
     public static Feature parseFeature(String featureString)
     {
@@ -159,6 +188,11 @@ public class Feature<T extends Comparable<?>>
             default: throw new IllegalStateException("Feature has no type!");
         }
 
+    }
+
+    public String toString()
+    {
+        return this.getName() + " : " + getValues().toString();
     }
 
 }
