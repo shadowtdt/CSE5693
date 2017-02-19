@@ -25,7 +25,7 @@ public class TreeBuilder
         if(PreCheck.isEmpty(features,trainingData))return null;
         Feature feature = features.remove(0);
         FeatureNode node = new FeatureNode(feature);
-        Map<Comparable, Integer> targetFeatureDist = target.getValueDistribution(trainingData);
+        Map<Comparable, Integer> targetFeatureDist = target.getValueCounts(trainingData);
         node.setTargetDistributions(targetFeatureDist);
         log.info("Created node {} with Dist: {}",node.getName(),targetFeatureDist);
 
@@ -95,6 +95,14 @@ public class TreeBuilder
         return bestPredicate;
     }
 
-
+//    public static Feature getBestInfoGainFeature(Feature target, List<Feature> features, List<Map<String, Comparable>> datas)
+//    {
+//        Double datasEntropy = target.getEntropy(datas);
+//        Feature bestFeature = null;
+//        Double bestEntropy = 1d;
+//        for (Feature feature : features) {
+//
+//        }
+//    }
 
 }

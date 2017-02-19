@@ -72,26 +72,29 @@ public class Feature<T extends Comparable<?>>
         if (!PreCheck.isNull(value)) this.values.add(value);
     }
 
-    public Map<T,Integer> getValueDistribution(List<Map<String,T>> examples)
+    public Map<T,Integer> getValueCounts(List<Map<String, Comparable>> examples)
     {
-        Map<T, Integer> targetFeatureDistribution;
-
-        List<Map<String,T>> filteredExamples = examples.stream()
-                .filter(m -> m.containsKey(this.getName())) // Target feature is present
-                .collect(Collectors.toList());
-        targetFeatureDistribution = new HashMap<>();
-        for (Map<String, T> example : filteredExamples) {
-            T targetValue = example.get(this.getName());
-            targetFeatureDistribution.putIfAbsent(targetValue,0);
-            targetFeatureDistribution.compute(targetValue,(k,v) -> v = v+1);
-        }
-        return targetFeatureDistribution;
+        Map<T,Integer> valueCounts = new HashMap<T, Integer>();
+        mapValueToData(examples).forEach((k,v) -> valueCounts.put(k,v.size()));
+        return valueCounts;
+//        Map<T, Integer> targetFeatureDistribution;
+//
+//        List<Map<String,Comparable>> filteredExamples = examples.stream()
+//                .filter(m -> m.containsKey(this.getName())) // Target feature is present
+//                .collect(Collectors.toList());
+//        targetFeatureDistribution = new HashMap<>();
+//        for (Map<String, Comparable> example : filteredExamples) {
+//            Comparable targetValue = example.get(this.getName());
+//            targetFeatureDistribution.putIfAbsent((T)targetValue,0);
+//            targetFeatureDistribution.compute((T)targetValue,(k,v) -> v = v+1);
+//        }
+//        return targetFeatureDistribution;
     }
 
-    public Double getEntropy(List<Map<String,T>> examples)
+    public Double getEntropy(List<Map<String,Comparable>> examples)
     {
         Double entropy = 0d;
-        Map<T,Integer> featureValueDist = this.getValueDistribution(examples);
+        Map<T,Integer> featureValueDist = this.getValueCounts(examples);
         Integer exampleCount = examples.size();
 
         String entropyCalcStr = "";
@@ -106,6 +109,22 @@ public class Feature<T extends Comparable<?>>
         }
         //log.debug("Entropy = {} = {}",entropy,entropyCalcStr);
         return entropy;
+    }
+
+    public Map<T, List<Map<String, Comparable>>> mapValueToData(List<Map<String, Comparable>> datas)
+    {
+        Map<T, List<Map<String, Comparable>>> valueMap = new HashMap<>();
+
+        List<Map<String,Comparable>> filteredExamples = datas.stream()
+                .filter(m -> m.containsKey(this.getName())) // Target feature is present
+                .collect(Collectors.toList());
+
+        for (Map<String, Comparable> example : filteredExamples) {
+            Comparable targetValue = example.get(this.getName());
+            valueMap.putIfAbsent((T)targetValue,new ArrayList<>());
+            valueMap.get((T)targetValue).add(example);
+        }
+        return valueMap;
     }
 
     public static Feature parseFeature(String featureString)
