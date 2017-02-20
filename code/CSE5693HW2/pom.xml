@@ -89,6 +89,13 @@
             <version>1.7.22</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+
     </dependencies>
 
 </project>

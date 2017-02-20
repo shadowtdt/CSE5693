@@ -1,6 +1,13 @@
 package com.ttoggweiler.cse5693;
 
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricRegistryListener;
+import com.codahale.metrics.Timer;
 import com.ttoggweiler.cse5693.learner.Examiner;
 import com.ttoggweiler.cse5693.learner.TreeBuilder;
 import com.ttoggweiler.cse5693.loader.DataLoader;
@@ -20,21 +27,26 @@ import java.util.Map;
 public class DecisionTreeRunner
 {
     private static Logger log = LoggerFactory.getLogger(DecisionTreeRunner.class);
+    static final MetricRegistry metrics = new MetricRegistry();
+    static private final Timer treeBuildTimes = metrics.timer(MetricRegistry.name(DecisionTreeRunner.class, "treeBuildTimes"));
+
     public static void main(String[] args) throws Exception
     {
         log.info("=== CSE5693-Hw2 Decision Tree Runner ====");
 
-        String dataFilePath = "/inputFiles/tennis-train.txt";
-        String featureFilePath = "/inputFiles/tennis-attr.txt";
-        String testFilePath = "/inputFiles/tennis-test.txt";
+//        String dataFilePath = "/inputFiles/tennis-train.txt";
+//        String featureFilePath = "/inputFiles/tennis-attr.txt";
+//        String testFilePath = "/inputFiles/tennis-test.txt";
 //
-//        String dataFilePath = "/inputFiles/bool-train.txt";
-//        String featureFilePath = "/inputFiles/bool-attr.txt";
-//        String testFilePath = "/inputFiles/bool-test.txt";
-
+        String dataFilePath = "/inputFiles/bool-train.txt";
+        String featureFilePath = "/inputFiles/bool-attr.txt";
+        String testFilePath = "/inputFiles/bool-test.txt";
+//
 //        String dataFilePath = "/inputFiles/iris-train.txt";
 //        String featureFilePath = "/inputFiles/iris-attr.txt";
 //        String testFilePath = "/inputFiles/iris-test.txt";
+
+
 
         log.info("= FILES =");
         log.info("Loading feature file: {}", featureFilePath);
@@ -54,7 +66,12 @@ public class DecisionTreeRunner
         for(Map<String,Comparable> data : validationDatas ) log.info("#{} Values: {}",i++, data.toString());
 
         Feature target = features.remove(features.size() - 1);
+        Timer.Context treeBuild = treeBuildTimes.time();
         FeatureNode rootNode = TreeBuilder.buildTree(target,features,trainingDatas);
+        Long buildDuration = treeBuild.stop()/1000000;
+
+        log.info("Build time: {} (milliseconds)",buildDuration);
+
         log.info("\n"+rootNode.toString());
         //for(Map<String,Comparable> data : validationDatas ) log.info("#{} Classification: {}",i++, rootNode.getClassificationDistribution(data).toString());
 

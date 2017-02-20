@@ -2,6 +2,7 @@ package com.ttoggweiler.cse5693.learner;
 
 import com.ttoggweiler.cse5693.tree.Feature;
 import com.ttoggweiler.cse5693.tree.FeatureNode;
+import com.ttoggweiler.cse5693.util.Parser;
 import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,8 @@ public class TreeBuilder
 
         if(targetFeatureDist.size() <= 1 || features.isEmpty())return node;
 
-        if(PreCheck.notEmpty(feature.getValues())) {
+        if(PreCheck.contains(feature.getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING))//PreCheck.notEmpty(feature.getValues()))
+        {
             for (Object o : feature.getValues()) {
                 FeatureNode child = buildTree(target,features.stream().collect(Collectors.toList()), trainingData.stream()
                         .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
@@ -55,25 +57,27 @@ public class TreeBuilder
         {
             Predicate<Comparable> numberPredicate = getPredicateForContinuousValuedFeature(target,feature,trainingData);
 
+            features.add(feature);
             List<Map<String, Comparable>> positiveSubSet = trainingData.stream()
                     .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
                     .filter(m -> numberPredicate.test(m.get(feature.getName()))) // filter data that has o value for feature
                     .collect(Collectors.toList());
             FeatureNode positiveChild = buildTree(target,features.stream().collect(Collectors.toList()), positiveSubSet);
             if (positiveChild != null) {
-                node.setDecisionEdge(numberPredicate.toString(),numberPredicate,positiveChild);
+                node.setDecisionEdge(feature.getValues().iterator().next().toString(),numberPredicate,positiveChild);
                 log.debug("Added child {} -> {}",positiveChild.getName(), node.getName() );
             }
 
             List<Map<String, Comparable>> negativeSubset = trainingData.stream()
                     .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
-                    .filter(m -> !numberPredicate.test(m.get(feature.getName()))) // filter data that has o value for feature
+                    .filter(m -> numberPredicate.negate().test(m.get(feature.getName()))) // filter data that has o value for feature
                     .collect(Collectors.toList());
             FeatureNode negativeChild = buildTree(target,features.stream().collect(Collectors.toList()), negativeSubset);
             if (negativeChild != null) {
-                node.setDecisionEdge(numberPredicate.toString(),numberPredicate.negate(),negativeChild);
+                node.setDecisionEdge("<"+feature.getValues().iterator().next().toString(),numberPredicate.negate(),negativeChild);
                 log.debug("Added child {} -> {}",negativeChild.getName(), node.getName() );
             }
+
         }
         return node;
     }
@@ -87,6 +91,7 @@ public class TreeBuilder
         Double bestEntropy = 1d;
         Comparable value = null;
         Predicate<Comparable> bestPredicate = null;
+        int bestEntopySize = 0;
         for (Map<String, Comparable> example : trainingData) {
             Comparable valueToTest = example.get(feature.getName());
             Predicate<Comparable> valuePredicate = x -> x.compareTo(valueToTest) >= 0;
@@ -94,12 +99,17 @@ public class TreeBuilder
                     .filter(m -> valuePredicate.test(m.get(feature.getName())))
                     .collect(Collectors.toList());
             Double entropyOfSubset = target.getEntropy(exampleSubSet);
-            log.debug("Feature: {} Value: {} Entropy: {}",feature.getName(),valueToTest,entropyOfSubset);
-            if(entropyOfSubset < bestEntropy) {
+            log.debug("Feature: {} Value: {} Entropy: {} Dist: {}",feature.getName(),valueToTest,entropyOfSubset, target.getValueCounts(exampleSubSet));
+
+            if( !feature.getValues().contains(valueToTest)
+                    && (entropyOfSubset < bestEntropy
+                    || (entropyOfSubset.equals(bestEntropy) && exampleSubSet.size() > bestEntopySize ))){
+//            if(entropyOfSubset < bestEntropy){
                 log.warn("{}= {} New best entropy: {} -> {}",feature.getName(),valueToTest,bestEntropy,entropyOfSubset);
                 bestEntropy = entropyOfSubset;
                 bestPredicate = valuePredicate;
                 value = valueToTest;
+                bestEntopySize = exampleSubSet.size();
             }
         }
         feature.addValue((Comparable<?>) value);
