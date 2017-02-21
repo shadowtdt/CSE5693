@@ -4,9 +4,13 @@ import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -69,11 +73,6 @@ public class FeatureNode extends Node<Feature>
         return targetFeatureDistribution;
     }
 
-    public Map<Comparable,Integer> getClassificationDistribution(Map<String,Comparable> input)
-    {
-        return getClassificationLeaf(input).getTargetDistributions();
-        // No children, input does not have this feature, no matching edge found
-    }
 
     public Predicate<Map<String, Comparable>> getPredicateForEdge(FeatureNode edge)
     {
@@ -81,6 +80,12 @@ public class FeatureNode extends Node<Feature>
                 .filter(e -> e.getValue().equals(edge))
                 .map(Map.Entry :: getKey)
                 .findAny().orElse(null);
+    }
+
+    public Map<Comparable,Integer> getClassificationDistribution(Map<String,Comparable> input)
+    {
+        return getClassificationLeaf(input).getTargetDistributions();
+        // No children, input does not have this feature, no matching edge found
     }
 
     public Comparable getClassification(Map<String,Comparable> input)
@@ -129,7 +134,7 @@ public class FeatureNode extends Node<Feature>
     {
         String treeStr = "";
         //for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
-        treeStr += getParentNode().map(n -> n.getName() + ": " + getParentEdgeName()).orElse("Root");
+        treeStr += getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("Root");
         if(PreCheck.notEmpty(edges))
         {
             for (Map.Entry<Predicate<Map<String, Comparable>>, FeatureNode> edge : edges.entrySet()) {
@@ -143,13 +148,41 @@ public class FeatureNode extends Node<Feature>
         }else return  treeStr + " : " +targetFeatureDistribution;//" : " + targetFeatureDistribution.toString();
     }
 
-    public String toPathString()
+    public String toPathTree()
     {
-        String treeStr = getParentNode().map(n -> ((FeatureNode) n)).map(n -> n.toPathString()).orElse("");
+        String treeStr = getParentNode().map(n -> ((FeatureNode) n)).map(n -> n.toPathTree()).orElse("");
         treeStr += "\n";
         for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
-        treeStr += getParentNode().map(n -> n.getName() + ": " + getParentEdgeName()).orElse("Root");
+        treeStr += getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("Root");
         if(!hasChildren()) treeStr += " : " + targetFeatureDistribution;
         return treeStr;
+    }
+
+    public String toPathString(boolean leaf)
+    {
+        String treeStr = getParentNode().map(n -> ((FeatureNode) n)).map(n -> n.toPathString(false)).orElse("");
+        if(PreCheck.notEmpty(treeStr)) treeStr+= " AND ";
+        treeStr += this.parentEdgeString(leaf);
+        return treeStr;
+    }
+
+    public String parentEdgeString(Boolean includeDist)
+    {
+        String edgeString = getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("");
+        if(includeDist) edgeString += " : "+getTargetDistributions();
+        return edgeString;
+    }
+
+    public List<FeatureNode> getLeafs()
+    {
+        ArrayList<FeatureNode> leafs = new ArrayList<>();
+        if (getChildrenNodes().isPresent()) {
+            for (Node n : getChildrenNodes().get()) {
+                leafs.addAll(((FeatureNode) n).getLeafs());
+            }
+        } else
+            leafs.add(this);
+
+        return leafs;
     }
 }

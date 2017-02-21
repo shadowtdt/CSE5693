@@ -3,7 +3,9 @@ package com.ttoggweiler.cse5693.tree;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -70,7 +72,7 @@ public class Node<T>
         if (childrenNodes != null && childrenNodes.contains(parentNode))
             throw new IllegalArgumentException("Node cannot have a parent and child who are equal");
 
-        if(this.parentNode != parentNode) {
+        if (this.parentNode != parentNode) {
             this.parentNode = parentNode;
             if (this.parentNode != ROOT_NODE_PARENT) this.parentNode.setChildNode(this);
         }
@@ -97,10 +99,9 @@ public class Node<T>
             throw new IllegalArgumentException("Node cannot have a parent and child who are equal");
 
         if (childrenNodes == null) childrenNodes = new ArrayList<>();
-        if(!childrenNodes.contains(childNode))
-        {
+        if (!childrenNodes.contains(childNode)) {
             childrenNodes.add(childNode);
-            if(childNode.getParentNode().isPresent() && !childNode.getParentNode().get().equals(this)) {
+            if (childNode.getParentNode().isPresent() && !childNode.getParentNode().get().equals(this)) {
                 childNode.setParentNode(this);
             }
         }
@@ -113,7 +114,7 @@ public class Node<T>
 
     public int distanceFromRoot()
     {
-        return getParentNode().map(Node :: distanceFromRoot).orElse(0) + 1;
+        return getParentNode().map(Node::distanceFromRoot).orElse(0) + 1;
     }
 
     /*
@@ -145,6 +146,5 @@ public class Node<T>
 //                treeStr += "\n" + child.toTreeString();
 //        return treeStr;
 //    }
-
 
 }

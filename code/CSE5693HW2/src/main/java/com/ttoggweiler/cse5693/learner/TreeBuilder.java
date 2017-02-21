@@ -46,8 +46,8 @@ public class TreeBuilder
             for (Map.Entry<Comparable, List<Map<String, Comparable>>> exampleSubsetMap : valueSubSets.entrySet()) {
                 FeatureNode child = buildTree(target,features.stream().collect(Collectors.toList()),exampleSubsetMap.getValue());
                 if(child != null) {
-                    node.addEdge(exampleSubsetMap.getKey().toString(),exampleSubsetMap.getKey(),child);
-                    log.debug("{} -- hasChild -> {} for value: {}: {}",node.getName(),child.getName(),feature.getName(),child.getParentEdgeName() );
+                    node.addEdge( "=" + exampleSubsetMap.getKey().toString(),exampleSubsetMap.getKey(),child);
+                    log.debug("{} -- hasChild -> {} for value: {}{}",node.getName(),child.getName(),feature.getName(),child.getParentEdgeName() );
                 }
             }
         }else
@@ -81,7 +81,6 @@ public class TreeBuilder
         return node;
     }
 
-
     public static Comparable getValueWithLowestEntropy(Feature target, Feature feature, List<Map<String, Comparable>> trainingData)
     {
         PreCheck.ifNull("Unable to get predicate for continuous feature " + feature.getName() + ". Null parameters found"
@@ -102,9 +101,9 @@ public class TreeBuilder
             Double entropyOfSubset = target.getEntropy(exampleSubSet);
             log.debug("Feature: {} Value: {} Entropy: {} Dist: {}",feature.getName(),valueToTest,entropyOfSubset, target.getValueCounts(exampleSubSet));
 
-            if((entropyOfSubset < bestEntropy
-                    || (entropyOfSubset.equals(bestEntropy) && exampleSubSet.size() > bestEntropySize ))){
-                log.warn("{}= {} New best entropy: {} -> {}",feature.getName(),valueToTest,bestEntropy,entropyOfSubset);
+            if(value == null || entropyOfSubset < bestEntropy
+                    || (entropyOfSubset.equals(bestEntropy) && exampleSubSet.size() > bestEntropySize )){
+                log.debug("{}= {} New best entropy: {} -> {}",feature.getName(),valueToTest,bestEntropy,entropyOfSubset);
                 bestEntropy = entropyOfSubset;
                 value = valueToTest;
                 bestEntropySize = exampleSubSet.size();
@@ -128,6 +127,7 @@ public class TreeBuilder
                 featureEntropy += ratio *  featureValueEntropy;
             }
             Double gain = targetEntropy - featureEntropy;
+            log.debug("Feature: {} Gain: {}",feature.getName(),gain);
             if(bestGain < gain) {
                 bestFeature = feature;
                 bestGain = gain;

@@ -70,7 +70,7 @@ public class DataLoader
 
     public static void main(String... args)
     {
-        Logger log = LoggerFactory.getLogger(FeatureLoader.class);
+        Logger log = LoggerFactory.getLogger(DataLoader.class);
 
 
         String dataFilePath = "/inputFiles/tennis-train.txt";
@@ -81,7 +81,7 @@ public class DataLoader
             List<Feature> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
             List<Map<String, Comparable>> datas = loadDataFromFile(dataFilePath,features);
 
-            log.info("Loaded {} instances: ", datas.size());
+            log.debug("Loaded {} instances: ", datas.size());
             int i =0;
             for(Map<String,Comparable> data : datas ){
                 log.info("#{} Values: {}",i++, data.toString());
