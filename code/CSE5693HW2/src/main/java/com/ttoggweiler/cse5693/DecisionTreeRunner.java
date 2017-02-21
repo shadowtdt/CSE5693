@@ -17,6 +17,7 @@ import com.ttoggweiler.cse5693.tree.FeatureNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,13 +39,13 @@ public class DecisionTreeRunner
 //        String featureFilePath = "/inputFiles/tennis-attr.txt";
 //        String testFilePath = "/inputFiles/tennis-test.txt";
 //
-        String dataFilePath = "/inputFiles/bool-train.txt";
-        String featureFilePath = "/inputFiles/bool-attr.txt";
-        String testFilePath = "/inputFiles/bool-test.txt";
-//
-//        String dataFilePath = "/inputFiles/iris-train.txt";
-//        String featureFilePath = "/inputFiles/iris-attr.txt";
-//        String testFilePath = "/inputFiles/iris-test.txt";
+//        String dataFilePath = "/inputFiles/bool-train.txt";
+//        String featureFilePath = "/inputFiles/bool-attr.txt";
+//        String testFilePath = "/inputFiles/bool-test.txt";
+
+        String dataFilePath = "/inputFiles/iris-train.txt";
+        String featureFilePath = "/inputFiles/iris-attr.txt";
+        String testFilePath = "/inputFiles/iris-test.txt";
 
 
 
@@ -55,6 +56,9 @@ public class DecisionTreeRunner
         List<Feature> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
         List<Map<String, Comparable>> trainingDatas = DataLoader.loadDataFromFile(dataFilePath,features);
         List<Map<String, Comparable>> validationDatas = DataLoader.loadDataFromFile(testFilePath,features);
+
+        List<Map<String, Comparable>> allData = new ArrayList<Map<String,Comparable>>(trainingDatas);
+        allData.addAll(validationDatas);
 
 
         int i =0;
@@ -72,7 +76,7 @@ public class DecisionTreeRunner
 
         log.info("Build time: {} (milliseconds)",buildDuration);
 
-        log.info("\n"+rootNode.toString());
+        log.info("\n"+rootNode.toTreeString());
         //for(Map<String,Comparable> data : validationDatas ) log.info("#{} Classification: {}",i++, rootNode.getClassificationDistribution(data).toString());
 
         Double trainingAccuracy = Examiner.getAccuracy(target,rootNode,trainingDatas);

@@ -40,41 +40,40 @@ public class TreeBuilder
 
         if(targetFeatureDist.size() <= 1 || features.isEmpty())return node;
 
-        if(PreCheck.contains(feature.getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING))//PreCheck.notEmpty(feature.getValues()))
+        if(PreCheck.contains(feature.getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING))
         {
-            for (Object o : feature.getValues()) {
-                FeatureNode child = buildTree(target,features.stream().collect(Collectors.toList()), trainingData.stream()
-                        .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
-                        .filter(m -> m.get(feature.getName()).equals(o)) // filter data that has o value for feature
-                        .collect(Collectors.toList()));
+            Map<Comparable, List<Map<String, Comparable>>> valueSubSets = feature.getValueToDataMap(trainingData);
+            for (Map.Entry<Comparable, List<Map<String, Comparable>>> exampleSubsetMap : valueSubSets.entrySet()) {
+                FeatureNode child = buildTree(target,features.stream().collect(Collectors.toList()),exampleSubsetMap.getValue());
                 if(child != null) {
-                    node.setDecisionEdge(o.toString(),s -> s.equals(o), child);
-                    node.setChildNode(child); // add the subtree to the current node
-                    log.debug("Added child {} -> {}",child.getName(), node.getName() );
+                    node.addEdge(exampleSubsetMap.getKey().toString(),exampleSubsetMap.getKey(),child);
+                    log.debug("{} -- hasChild -> {} for value: {}: {}",node.getName(),child.getName(),feature.getName(),child.getParentEdgeName() );
                 }
             }
         }else
         {
-            Predicate<Comparable> numberPredicate = getPredicateForContinuousValuedFeature(target,feature,trainingData);
+            Comparable lowestEntropyValue = getValueWithLowestEntropy(target,feature,trainingData);
+            Predicate<Map<String, Comparable>> numberPredicate = feature.addValue(lowestEntropyValue);
 
             features.add(feature);
+
             List<Map<String, Comparable>> positiveSubSet = trainingData.stream()
                     .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
-                    .filter(m -> numberPredicate.test(m.get(feature.getName()))) // filter data that has o value for feature
+                    .filter(m -> numberPredicate.test(m)) // filter data that has o value for feature
                     .collect(Collectors.toList());
             FeatureNode positiveChild = buildTree(target,features.stream().collect(Collectors.toList()), positiveSubSet);
             if (positiveChild != null) {
-                node.setDecisionEdge(feature.getValues().iterator().next().toString(),numberPredicate,positiveChild);
+                node.addEdge(">=" +lowestEntropyValue,lowestEntropyValue,positiveChild);
                 log.debug("Added child {} -> {}",positiveChild.getName(), node.getName() );
             }
 
             List<Map<String, Comparable>> negativeSubset = trainingData.stream()
                     .filter(m -> m.containsKey(feature.getName())) // filter data that has feature
-                    .filter(m -> numberPredicate.negate().test(m.get(feature.getName()))) // filter data that has o value for feature
+                    .filter(m -> numberPredicate.negate().test(m)) // filter data that has o value for feature
                     .collect(Collectors.toList());
             FeatureNode negativeChild = buildTree(target,features.stream().collect(Collectors.toList()), negativeSubset);
             if (negativeChild != null) {
-                node.setDecisionEdge("<"+feature.getValues().iterator().next().toString(),numberPredicate.negate(),negativeChild);
+                node.addNegativeEdge("<"+lowestEntropyValue,lowestEntropyValue,negativeChild);
                 log.debug("Added child {} -> {}",negativeChild.getName(), node.getName() );
             }
 
@@ -82,55 +81,53 @@ public class TreeBuilder
         return node;
     }
 
-    public static Predicate<Comparable> getPredicateForContinuousValuedFeature(Feature target, Feature feature, List<Map<String, Comparable>> trainingData)
+
+    public static Comparable getValueWithLowestEntropy(Feature target, Feature feature, List<Map<String, Comparable>> trainingData)
     {
         PreCheck.ifNull("Unable to get predicate for continuous feature " + feature.getName() + ". Null parameters found"
                 ,target,feature,trainingData);
 
-        //Double entropyForAll = getEntropy(target,trainingData);
         Double bestEntropy = 1d;
         Comparable value = null;
-        Predicate<Comparable> bestPredicate = null;
-        int bestEntopySize = 0;
+        int bestEntropySize = 0;
         for (Map<String, Comparable> example : trainingData) {
             Comparable valueToTest = example.get(feature.getName());
-            Predicate<Comparable> valuePredicate = x -> x.compareTo(valueToTest) >= 0;
+            if(feature.getValues().contains(valueToTest)) continue;
+
+            Predicate<Map<String, Comparable>> valuePredicate = x -> x.get(feature.getName()).compareTo(valueToTest) >= 0;
+
             List<Map<String,Comparable>> exampleSubSet = trainingData.stream()
-                    .filter(m -> valuePredicate.test(m.get(feature.getName())))
+                    .filter(m -> valuePredicate.test(m))
                     .collect(Collectors.toList());
             Double entropyOfSubset = target.getEntropy(exampleSubSet);
             log.debug("Feature: {} Value: {} Entropy: {} Dist: {}",feature.getName(),valueToTest,entropyOfSubset, target.getValueCounts(exampleSubSet));
 
-            if( !feature.getValues().contains(valueToTest)
-                    && (entropyOfSubset < bestEntropy
-                    || (entropyOfSubset.equals(bestEntropy) && exampleSubSet.size() > bestEntopySize ))){
-//            if(entropyOfSubset < bestEntropy){
+            if((entropyOfSubset < bestEntropy
+                    || (entropyOfSubset.equals(bestEntropy) && exampleSubSet.size() > bestEntropySize ))){
                 log.warn("{}= {} New best entropy: {} -> {}",feature.getName(),valueToTest,bestEntropy,entropyOfSubset);
                 bestEntropy = entropyOfSubset;
-                bestPredicate = valuePredicate;
                 value = valueToTest;
-                bestEntopySize = exampleSubSet.size();
+                bestEntropySize = exampleSubSet.size();
             }
         }
-        feature.addValue((Comparable<?>) value);
-        return bestPredicate;
+        return value;
     }
 
     public static Feature getBestInfoGainFeature(Feature target, List<Feature> features, List<Map<String, Comparable>> datas)
     {
-        Double datasEntropy = target.getEntropy(datas);
+        PreCheck.ifNull("Unable to get best feature with null value for target/features/example",target,features,datas);
+        Double targetEntropy = target.getEntropy(datas);
         Feature bestFeature = null;
-        Double bestEntropy = 1d;
         Double bestGain = 0d;
         for (Feature feature : features) {
             Map<Comparable, List<Map<String, Comparable>>> valueMap = feature.getValueToDataMap(datas);
             Double featureEntropy = 0d;
-            for (Map.Entry<Comparable, List<Map<String, Comparable>>> valueEntry : valueMap.entrySet()) {
-                Double ratio = (double) valueEntry.getValue().size() / (double) datas.size();
-                Double featureValueEntropy = target.getEntropy(valueEntry.getValue());
+            for (Map.Entry<Comparable, List<Map<String, Comparable>>> examplesWithValue : valueMap.entrySet()) {
+                Double ratio = (double) examplesWithValue.getValue().size() / (double) datas.size();
+                Double featureValueEntropy = target.getEntropy(examplesWithValue.getValue());
                 featureEntropy += ratio *  featureValueEntropy;
             }
-            Double gain = datasEntropy - featureEntropy;
+            Double gain = targetEntropy - featureEntropy;
             if(bestGain < gain) {
                 bestFeature = feature;
                 bestGain = gain;

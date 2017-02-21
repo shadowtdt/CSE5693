@@ -57,13 +57,13 @@ public class Node<T>
         return this.parentNode != null && this.parentNode != ROOT_NODE_PARENT;
     }
 
-    public Optional<Node> getParentNode()
+    public Optional<Node<T>> getParentNode()
     {
         if (hasParent()) return Optional.of(parentNode);
         else return Optional.empty();
     }
 
-    public void setParentNode(Node parentNode)
+    public void setParentNode(Node<T> parentNode)
     {
         if (parentNode == null)
             throw new IllegalArgumentException("Node parent cannot be set to null. Use ROOT_NODE_PARENT to make this node root.");

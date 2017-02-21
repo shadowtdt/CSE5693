@@ -16,7 +16,7 @@ public class Feature<T extends Comparable<?>>
     private UUID id = UUID.randomUUID();
     private String name;
     private Parser.Type type;
-    private HashMap<T, Predicate<Comparable>> values = new HashMap<T, Predicate<Comparable>>();
+    private HashMap<Comparable, Predicate<Map<String, Comparable>>> values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
 
     public Feature(String name, Parser.Type type, Set<T> values)
     {
@@ -57,49 +57,61 @@ public class Feature<T extends Comparable<?>>
         if (!PreCheck.isNull(type)) this.type = type;
     }
 
-    public Set<T> getValues()
+    public Set<Comparable> getValues()
     {
         return values.keySet();
     }
 
+    public Predicate<Map<String, Comparable>> getPredicateForValue(T value)
+    {
+        if (!values.containsKey(value))
+            throw new IllegalArgumentException("No predicate found for feature value: " + this.getName() + " : " + value);
+        else return values.get(value);
+    }
+
     public void setValues(Set<T> values)
     {
-        if (!PreCheck.isEmpty(values)) values.forEach(this :: addValue);
+        if (!PreCheck.isEmpty(values)) values.forEach(this::addValue);
     }
 
-    public void addValue(T value)
+    public Predicate<Map<String, Comparable>> addValue(T value)
     {
-        if (PreCheck.isEmpty(this.values)) this.values = new HashMap<T, Predicate<Comparable>>();
-        if (PreCheck.notNull(value)) {
-            if(PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING))
-                this.values.put(value,x -> value.equals(x));
-            else
-                this.values.put(value, x -> x.compareTo(value) > 0);
+        if (PreCheck.isEmpty(this.values)) this.values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
+        PreCheck.ifNull("Unable to add null value to feature "+ this.getName(), value);
+
+        Predicate<Map<String, Comparable>> valuePredicate;
+        if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
+            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).equals(value);
+            this.values.put(value, valuePredicate);
+        } else {
+            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).compareTo(value) >= 0;
+            this.values.put(value, valuePredicate);
         }
+        return valuePredicate;
     }
 
-    public Map<T,Integer> getValueCounts(List<Map<String, Comparable>> examples)
+    public Map<T, Integer> getValueCounts(List<Map<String, Comparable>> examples)
     {
-        Map<T,Integer> valueCounts = new HashMap<T, Integer>();
-        getValueToDataMap(examples).forEach((k, v) -> valueCounts.put(k,v.size()));
+        Map<T, Integer> valueCounts = new HashMap<T, Integer>();
+        getValueToDataMap(examples).forEach((k, v) -> valueCounts.put(k, v.size()));
         return valueCounts;
     }
 
-    public Double getEntropy(List<Map<String,Comparable>> examples)
+    public Double getEntropy(List<Map<String, Comparable>> examples)
     {
         Double entropy = 0d;
-        Map<T,Integer> featureValueDist = this.getValueCounts(examples);
+        Map<T, Integer> featureValueDist = this.getValueCounts(examples);
         Integer exampleCount = examples.size();
 
         String entropyCalcStr = "";
         for (Object possibleValue : this.getValues()) {
             Integer matchingExampleCount = featureValueDist.get(possibleValue);
-            if(matchingExampleCount == null || matchingExampleCount == 0)
+            if (matchingExampleCount == null || matchingExampleCount == 0)
                 continue;
-            Double matchingExampleRatio = (double)matchingExampleCount/(double) exampleCount;
-            String ratioString = matchingExampleCount+"/"+exampleCount;
-            entropy += (-1*matchingExampleRatio) * MoreMath.log2(matchingExampleRatio);
-            entropyCalcStr += " + -"+ratioString+" log_2 " + ratioString;
+            Double matchingExampleRatio = (double) matchingExampleCount / (double) exampleCount;
+            String ratioString = matchingExampleCount + "/" + exampleCount;
+            entropy += (-1 * matchingExampleRatio) * MoreMath.log2(matchingExampleRatio);
+            entropyCalcStr += " + -" + ratioString + " log_2 " + ratioString;
         }
         //zlog.debug("Entropy = {} = {}",entropy,entropyCalcStr);
         return entropy;
@@ -109,14 +121,14 @@ public class Feature<T extends Comparable<?>>
     {
         Map<T, List<Map<String, Comparable>>> valueMap = new HashMap<>();
 
-        List<Map<String,Comparable>> filteredExamples = datas.stream()
+        List<Map<String, Comparable>> filteredExamples = datas.stream()
                 .filter(m -> m.containsKey(this.getName())) // Target feature is present
                 .collect(Collectors.toList());
 
         for (Map<String, Comparable> example : filteredExamples) {
             Comparable targetValue = example.get(this.getName());
-            valueMap.putIfAbsent((T)targetValue,new ArrayList<>());
-            valueMap.get((T)targetValue).add(example);
+            valueMap.putIfAbsent((T) targetValue, new ArrayList<>());
+            valueMap.get((T) targetValue).add(example);
         }
         return valueMap;
     }
@@ -124,7 +136,8 @@ public class Feature<T extends Comparable<?>>
     public static Feature parseFeature(String featureString)
     {
         String[] splitFeature = featureString.split(" ");
-        if (splitFeature.length < 2) throw new IllegalArgumentException("Feature string must include a label and type/value parameters " + featureString );
+        if (splitFeature.length < 2)
+            throw new IllegalArgumentException("Feature string must include a label and type/value parameters " + featureString);
         String name = splitFeature[0].trim();
         Parser.Type type = Parser.getType(splitFeature[1]).orElseThrow(() -> new IllegalArgumentException("Unknown type found " + splitFeature[1]));
 
@@ -187,18 +200,19 @@ public class Feature<T extends Comparable<?>>
 
         switch (getFeatureType()) {
             case BOOLEAN:
-                return ( Parser.toBoolean(valueString).map(v -> (T)v));
+                return (Parser.toBoolean(valueString).map(v -> (T) v));
             case INTIGER:
-                return ( Parser.toInteger(valueString).map(v -> (T)v));
+                return (Parser.toInteger(valueString).map(v -> (T) v));
             case LONG:
-                return ( Parser.toLong(valueString).map(v -> (T)v));
+                return (Parser.toLong(valueString).map(v -> (T) v));
             case FLOAT:
-                return ( Parser.toFloat(valueString).map(v -> (T)v));
+                return (Parser.toFloat(valueString).map(v -> (T) v));
             case DOUBLE:
-                return ( Parser.toDouble(valueString).map(v -> (T)v));
+                return (Parser.toDouble(valueString).map(v -> (T) v));
             case STRING:
-                return Optional.of((T)valueString.trim());
-            default: throw new IllegalStateException("Feature has no type!");
+                return Optional.of((T) valueString.trim());
+            default:
+                throw new IllegalStateException("Feature has no type!");
         }
 
     }

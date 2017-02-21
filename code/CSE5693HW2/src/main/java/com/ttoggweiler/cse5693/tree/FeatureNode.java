@@ -1,8 +1,9 @@
 package com.ttoggweiler.cse5693.tree;
 
 import com.ttoggweiler.cse5693.util.PreCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,22 +14,37 @@ import java.util.function.Predicate;
  */
 public class FeatureNode extends Node<Feature>
 {
-    private Map<Predicate<Comparable>,FeatureNode> edges; // Decisions, predicate dictates which child based on input
+    private static Logger log = LoggerFactory.getLogger(FeatureNode.class);
+
+    private Map<Predicate<Map<String, Comparable>>,FeatureNode> edges; // Decisions, predicate dictates which child based on input
     private Map<Comparable, Integer> targetFeatureDistribution;
-    private String parentEdgeValue = "";
+    private String parentEdgeName = "";
+    private Predicate<Map<String, Comparable>> parentPredicate;
 
     public FeatureNode(Feature feature)
     {
         super(feature.getName(),null,feature);
     }
 
-    public void setDecisionEdge(String edgeValue , Predicate<Comparable> condition, FeatureNode edge)
+    public void addEdge(String edgeName, Comparable edgeValue, FeatureNode edge)
     {
         if(PreCheck.isEmpty(edges)) edges = new HashMap<>();
-        edges.put(condition,edge);
+        Predicate<Map<String, Comparable>> edgePredicate = this.getData().getPredicateForValue(edgeValue);
+        edges.put(edgePredicate,edge);
         this.setChildNode(edge);
-        edge.setParentEdgeValue(edgeValue);
+        edge.setParentEdge(edgeName,edgePredicate);
         edge.setParentNode(this);
+    }
+
+    public void addNegativeEdge(String edgeName, Comparable edgeValue, FeatureNode negativeEdge)
+    {
+        if(PreCheck.isEmpty(edges)) edges = new HashMap<>();
+        Predicate<Map<String, Comparable>> edgePredicate = this.getData().getPredicateForValue(edgeValue).negate();
+
+        edges.put(edgePredicate,negativeEdge);
+        this.setChildNode(negativeEdge);
+        negativeEdge.setParentEdge(edgeName,edgePredicate);
+        negativeEdge.setParentNode(this);
     }
 
     public void setTargetDistributions(Map<Comparable,Integer> distributions)
@@ -37,14 +53,15 @@ public class FeatureNode extends Node<Feature>
         this.targetFeatureDistribution = distributions;
     }
 
-    public void setParentEdgeValue(String parentEdgeValue)
+    public void setParentEdge(String parentEdgeValue, Predicate<Map<String, Comparable>> parentEdgePredicate)
     {
-        this.parentEdgeValue = parentEdgeValue;
+        this.parentEdgeName = parentEdgeValue;
+        this.parentPredicate = parentEdgePredicate;
     }
 
-    public String getParentEdgeValue()
+    public String getParentEdgeName()
     {
-        return this.parentEdgeValue;
+        return this.parentEdgeName;
     }
 
     public Map<Comparable,Integer> getTargetDistributions()
@@ -54,44 +71,85 @@ public class FeatureNode extends Node<Feature>
 
     public Map<Comparable,Integer> getClassificationDistribution(Map<String,Comparable> input)
     {
-        if(hasChildren() && input.containsKey(getData().getName())) // if there are children and input contains this feature
-        {
-            Comparable featureValue =  input.get(getData().getName()); // get the feature value from the input
-            Optional<FeatureNode> oNextNode = edges.entrySet().stream()
-                    .filter(e -> e.getKey().test(featureValue)) // Use predicates to test the value for matching children
-                    .map(Map.Entry:: getValue)
-                    .findAny(); // // TODO: ttoggweiler 2/17/17 handle multiple children
-
-            if(oNextNode.isPresent())return oNextNode.get().getClassificationDistribution(input); // Step to next node in tree and pass input to make a decision
-        }
-
+        return getClassificationLeaf(input).getTargetDistributions();
         // No children, input does not have this feature, no matching edge found
-        return targetFeatureDistribution;
+    }
+
+    public Predicate<Map<String, Comparable>> getPredicateForEdge(FeatureNode edge)
+    {
+        return edges.entrySet().stream()
+                .filter(e -> e.getValue().equals(edge))
+                .map(Map.Entry :: getKey)
+                .findAny().orElse(null);
     }
 
     public Comparable getClassification(Map<String,Comparable> input)
     {
-        return this.getClassificationDistribution(input).entrySet().stream()
-                .max((a,b) -> a.getValue() > b.getValue()? 1 : -1)
-                .map(Map.Entry :: getKey)
-                .orElse(null);
+        return this.getClassificationLeaf(input).getMostCommonValue();
     }
 
-    public String toString()
+    public FeatureNode getClassificationLeaf(Map<String,Comparable> input)
+    {
+        if(hasChildren() && input.containsKey(getData().getName())) // if there are children and input contains this feature
+        {
+            Optional<FeatureNode> oNextNode = edges.entrySet().stream()
+                    .filter(e -> e.getKey().test(input)) // Use predicates to test the value for matching children
+                    .map(Map.Entry:: getValue)
+                    .findAny(); // // TODO: ttoggweiler 2/17/17 handle multiple children or error
+
+            if(oNextNode.isPresent())return oNextNode.get().getClassificationLeaf(input); // Step to next node in tree and pass input to make a decision
+        }
+        return this;
+    }
+
+    public Comparable getMostCommonValue()
+    {
+        return getTargetDistributions().entrySet().stream()
+            .max((a,b) -> a.getValue() > b.getValue()? 1 : -1)
+            .map(Map.Entry :: getKey)
+            .orElse(null);
+    }
+
+    public Predicate<Map<String, Comparable>> getParentEdgePredicate()
+    {
+        return parentPredicate;
+    }
+
+    public Predicate<Map<String, Comparable>> getPathPredicate()
+    {
+        if(getParentNode().isPresent())
+        {
+            FeatureNode parent = getParentNode().map(n -> ((FeatureNode) n)).get();
+            return  parent.getPathPredicate().and(getParentEdgePredicate());
+        }
+        return (x) -> true;
+    }
+
+    public String toTreeString()
     {
         String treeStr = "";
         //for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
-        treeStr += getParentNode().map(n -> n.getName() + " = " + getParentEdgeValue()).orElse("Root");
+        treeStr += getParentNode().map(n -> n.getName() + ": " + getParentEdgeName()).orElse("Root");
         if(PreCheck.notEmpty(edges))
         {
-            for (Map.Entry<Predicate<Comparable>, FeatureNode> edge : edges.entrySet()) {
+            for (Map.Entry<Predicate<Map<String, Comparable>>, FeatureNode> edge : edges.entrySet()) {
                 treeStr += "\n";
 
                     for (int i = 0; i < distanceFromRoot(); i++) treeStr += "|\t";
-                    treeStr += edge.getValue().toString();
+                    treeStr += edge.getValue().toTreeString();
 
             }
             return treeStr;
         }else return  treeStr + " : " +targetFeatureDistribution;//" : " + targetFeatureDistribution.toString();
+    }
+
+    public String toPathString()
+    {
+        String treeStr = getParentNode().map(n -> ((FeatureNode) n)).map(n -> n.toPathString()).orElse("");
+        treeStr += "\n";
+        for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
+        treeStr += getParentNode().map(n -> n.getName() + ": " + getParentEdgeName()).orElse("Root");
+        if(!hasChildren()) treeStr += " : " + targetFeatureDistribution;
+        return treeStr;
     }
 }
