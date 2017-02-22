@@ -2,7 +2,6 @@ package com.ttoggweiler.cse5693.learner;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.sun.org.apache.xalan.internal.utils.FeatureManager;
 import com.ttoggweiler.cse5693.rule.Rule;
 import com.ttoggweiler.cse5693.tree.Feature;
 import com.ttoggweiler.cse5693.tree.FeatureNode;
@@ -34,7 +33,7 @@ public class Examiner
             else
                 log.debug("Incorrect classification (TREE):\n{} for example: {} \nFailed Path: {}", classificationResult.getMostCommonValue(), data.toString(), classificationResult.toPathTree());
         }
-        log.info("Avg classification time (TREE): {}", classificationTimes.getSnapshot().getMean() / 1000000);
+        log.debug("Avg classification time (TREE): {}", classificationTimes.getSnapshot().getMean() / 1000000);
         return correct > 0 ? (double) correct / (double) datas.size() : 0d;
     }
 
@@ -54,7 +53,7 @@ public class Examiner
                     log.debug("Incorrect classification (RULE):\n{} for example: {} \nFailed Rule: {}", classificationResult.getMostCommonValue(), data.toString(), classificationResult.toPathString(true));
             } else continue;
         }
-        log.info("Avg classification time (Rule): {}", classificationTimes.getSnapshot().getMean() / 1000000);
+        log.debug("Avg classification time (Rule): {}", classificationTimes.getSnapshot().getMean() / 1000000);
         return correct > 0 ? (double) correct / (double) datas.size() : 0d;
     }
 }

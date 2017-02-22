@@ -4,7 +4,7 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%-5level %logger{1} - %msg%n}"/>
         </Console>
-        <File name="gameLog" append="false" fileName="logs/game.log">
+        <File name="TreeLog" append="false" fileName="logs/tree.log">
             <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
         </File>
     </Appenders>
@@ -12,9 +12,23 @@
         <Root level="warn">
             <AppenderRef ref="console"/>
         </Root>
-        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
-            <AppenderRef ref="gameLog" />
+        <logger name="com.ttoggweiler.cse5693" level="info" additivity="false">
+            <AppenderRef ref="TreeLog" />
             <AppenderRef ref="console" />
         </logger>
+        <logger name="com.ttoggweiler.cse5693.learner" level="info" additivity="false">
+            <AppenderRef ref="TreeLog" />
+            <AppenderRef ref="console" />
+        </logger>
+        <logger name="com.ttoggweiler.cse5693.loader" level="info" additivity="false">
+            <AppenderRef ref="TreeLog" />
+            <AppenderRef ref="console" />
+        </logger>
+
+        <logger name="com.ttoggweiler.cse5693.rule" level="info" additivity="false">
+            <AppenderRef ref="TreeLog" />
+            <AppenderRef ref="console" />
+        </logger>
+
     </Loggers>
 </Configuration>

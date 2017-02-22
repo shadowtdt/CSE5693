@@ -180,7 +180,7 @@ public class Feature<T extends Comparable<?>>
                 Feature<String> StringFeature = new Feature<String>(name, type);
                 if (splitFeature.length > 2)
                     for (int i = 1; i < splitFeature.length; i++) {
-                        StringFeature.addValue(splitFeature[i].trim());
+                        StringFeature.addValue(splitFeature[i].toLowerCase().trim());
                     }
                 return StringFeature;
         }
@@ -210,7 +210,7 @@ public class Feature<T extends Comparable<?>>
             case DOUBLE:
                 return (Parser.toDouble(valueString).map(v -> (T) v));
             case STRING:
-                return Optional.of((T) valueString.trim());
+                return Optional.of((T) valueString.toLowerCase().trim());
             default:
                 throw new IllegalStateException("Feature has no type!");
         }
