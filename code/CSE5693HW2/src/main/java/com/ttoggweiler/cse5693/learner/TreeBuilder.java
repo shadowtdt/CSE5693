@@ -53,6 +53,11 @@ public class TreeBuilder
         }else
         {
             Comparable lowestEntropyValue = getValueWithLowestEntropy(target,feature,trainingData);
+            if(lowestEntropyValue == null){
+                features.remove(feature);
+                return buildTree(target,features.stream().collect(Collectors.toList()),trainingData);
+            }
+
             Predicate<Map<String, Comparable>> numberPredicate = feature.addValue(lowestEntropyValue);
 
             features.add(feature);

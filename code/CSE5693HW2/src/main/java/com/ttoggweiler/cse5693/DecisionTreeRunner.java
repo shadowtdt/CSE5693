@@ -37,16 +37,20 @@ public class DecisionTreeRunner
 //        String featureFilePath = "/inputFiles/bool-attr.txt";
 //        String dataFilePath = "/inputFiles/bool-train.txt";
 //        String testFilePath = "/inputFiles/bool-test.txt";
-
+//
         String featureFilePath = "/inputFiles/iris-attr.txt";
         String dataFilePath = "/inputFiles/iris-train.txt";
         String testFilePath = "/inputFiles/iris-test.txt";
+
+//        String featureFilePath = "/inputFiles/iris-attr.txt";
+//        String dataFilePath = "/inputFiles/iris-trainNoisy.txt";
+//        String testFilePath = "/inputFiles/iris-test.txt";
 
 //        String featureFilePath = "inputFiles/EnjoySport-attr.txt";
 //        String dataFilePath = "inputFiles/enjoySport-train.txt";
 //        String testFilePath = dataFilePath;
 
-        log.info("Args: {}", Arrays.toString(args));
+        log.debug("Args: {}", Arrays.toString(args));
         if(args.length > 0)
             if(args.length < 3)
                 throw new IllegalArgumentException("Must provide files for features, training and validation. Found: " + Arrays.toString(args));
@@ -108,19 +112,19 @@ public class DecisionTreeRunner
         log.info("\n\n===  Post Prune Rules  ===");
         postPruneRules.forEach(r -> log.info(r.toString()));
 
-        log.info("\n\n===   Tree Validation   ===");
+        log.info("\n\n===   Tree  ===");
         Double trainingAccuracy = Examiner.getAccuracy(target,rootNode,trainingDatas);
         log.info("Tree Training accuracy: {}%",trainingAccuracy*100);
         Double validationAccuracy = Examiner.getAccuracy(target,rootNode,validationDatas);
         log.info("Tree Validation accuracy: {}%",validationAccuracy*100);
 
-        log.info("\n\n===   Rule  Validation  ===");
+        log.info("\n\n===   Rule  ===");
         Double trainingRuleAccuracy = Examiner.getAccuracy(target,rules,trainingDatas);
         log.info("Rule Training accuracy: {}%",trainingRuleAccuracy*100);
         Double validationRuleAccuracy = Examiner.getAccuracy(target,rules,validationDatas);
         log.info("Rule Validation accuracy: {}%",validationRuleAccuracy*100);
 
-        log.info("\n\n===   Post Prune Rule  alidation  ===");
+        log.info("\n\n===   Post Prune Rule  ===");
         Double trainingPruneRuleAccuracy = Examiner.getAccuracy(target,postPruneRules,trainingDatas);
         log.info("Post Prune Rule Training accuracy: {}%",trainingPruneRuleAccuracy*100);
         Double validationPruneRuleAccuracy = Examiner.getAccuracy(target,postPruneRules,validationDatas);
