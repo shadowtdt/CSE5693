@@ -1,0 +1,9 @@
+Sky Sunny cloudy rainy
+airtemp warm cold
+Humidity High Normal
+Wind Weak Strong
+water warm cool
+forecast same changed
+
+enjoysport Yes No
+

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+java -cp ../target/CSE5693-HW2-1.0-SNAPSHOT-jar-with-dependencies.jar com.ttoggweiler.cse5693.DecisionTreeRunner ../src/main/resources/inputFiles/iris-attr.txt ../src/main/resources/inputFiles/iris-trainNoisy.txt ../src/main/resources/inputFiles/iris-test.txt
