@@ -164,7 +164,7 @@ public class PreCheck
      * @param array object to check
      * @throws IllegalArgumentException when array is null or empty, thrown with provided message
      */
-    public static <T extends Throwable> void ifEmpty(Supplier<T> exception, T[] array) throws T
+    public static <X,T extends Throwable> void ifEmpty(Supplier<T> exception, X[] array) throws T
     {
         if (isEmpty(array)) throw exception.get();
     }

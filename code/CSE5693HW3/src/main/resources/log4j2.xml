@@ -12,20 +12,20 @@
         <Root level="warn">
             <AppenderRef ref="console"/>
         </Root>
-        <logger name="com.ttoggweiler.cse5693" level="info" additivity="false">
+        <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
             <AppenderRef ref="TreeLog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693.learner" level="info" additivity="false">
+        <logger name="com.ttoggweiler.cse5693.learner" level="debug" additivity="false">
             <AppenderRef ref="TreeLog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693.loader" level="info" additivity="false">
+        <logger name="com.ttoggweiler.cse5693.loader" level="debug" additivity="false">
             <AppenderRef ref="TreeLog" />
             <AppenderRef ref="console" />
         </logger>
 
-        <logger name="com.ttoggweiler.cse5693.rule" level="info" additivity="false">
+        <logger name="com.ttoggweiler.cse5693.rule" level="debug" additivity="false">
             <AppenderRef ref="TreeLog" />
             <AppenderRef ref="console" />
         </logger>
