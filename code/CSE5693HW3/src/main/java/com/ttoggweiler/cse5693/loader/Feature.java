@@ -99,7 +99,7 @@ public class Feature<T extends Comparable<?>>
     public Map<T, Integer> getValueCounts(List<Map<String, Comparable>> examples)
     {
         Map<T, Integer> valueCounts = new HashMap<T, Integer>();
-        getValueToDataMap(examples).forEach((k, v) -> valueCounts.put(k, v.size()));
+        partitionExamplesByFeatureValues(examples).forEach((k, v) -> valueCounts.put(k, v.size()));
         return valueCounts;
     }
 
@@ -125,14 +125,15 @@ public class Feature<T extends Comparable<?>>
 
     /**
      * Partitions the input data based on this features values.
-     * @param datas a set of inputs to map to feature value
+     * @param examples a set of inputs to map to feature value
      * @return Map for each value of this feature, to a list of examples with that value.
      */
-    public Map<T, List<Map<String, Comparable>>> getValueToDataMap(List<Map<String, Comparable>> datas)
+    public Map<T, List<Map<String, Comparable>>> partitionExamplesByFeatureValues(List<Map<String, Comparable>> examples)
     {
+        PreCheck.ifEmpty(()->new IllegalStateException("Unable to partition example when no values are set on attribute."),examples);
         Map<T, List<Map<String, Comparable>>> valueMap = new HashMap<>();
 
-        List<Map<String, Comparable>> filteredExamples = datas.stream()
+        List<Map<String, Comparable>> filteredExamples = examples.stream()
                 .filter(m -> m.containsKey(this.getName())) // Target feature is present
                 .collect(Collectors.toList());
 
