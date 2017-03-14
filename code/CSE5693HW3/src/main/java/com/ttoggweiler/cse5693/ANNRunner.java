@@ -8,6 +8,7 @@ import com.ttoggweiler.cse5693.ann.Network;
 import com.ttoggweiler.cse5693.loader.DataLoader;
 import com.ttoggweiler.cse5693.loader.Feature;
 import com.ttoggweiler.cse5693.loader.FeatureLoader;
+import com.ttoggweiler.cse5693.util.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,32 +22,53 @@ import java.util.Map;
  */
 public class ANNRunner
 {
+    /* Input file selectors */
+    public static final String INPUT_TENNIS = "tennis";
+    public static final String INPUT_IRIS = "iris";
+    public static final String INPUT_IDENTITY = "identity";
+    public static final String INPUT_BOOL = "bool";
+    public static final String INPUT_IRIS_NOISY = "iris-noisy";
+    
     private static Logger log = LoggerFactory.getLogger(ANNRunner.class);
     private static final MetricRegistry metrics = new MetricRegistry();
 
     public static void main(String[] args) throws Exception
     {
-
-
-//        String featureFilePath = "/inputFiles/tennis-attr.txt";
-//        String dataFilePath = "/inputFiles/tennis-train.txt";
-//        String testFilePath = "/inputFiles/tennis-test.txt";
-//
-//        String featureFilePath = "/inputFiles/bool-attr.txt";
-//        String dataFilePath = "/inputFiles/bool-train.txt";
-//        String testFilePath = "/inputFiles/bool-test.txt";
-//
-        String featureFilePath = "/inputFiles/iris-attr.txt";
-        String dataFilePath = "/inputFiles/iris-train.txt";
-        String testFilePath = "/inputFiles/iris-test.txt";
-
-//        String featureFilePath = "/inputFiles/iris-attr.txt";
-//        String dataFilePath = "/inputFiles/iris-trainNoisy.txt";
-//        String testFilePath = "/inputFiles/iris-test.txt";
-
-//        String featureFilePath = "inputFiles/EnjoySport-attr.txt";
-//        String dataFilePath = "inputFiles/enjoySport-train.txt";
-//        String testFilePath = dataFilePath;
+        
+        String inputType = INPUT_IDENTITY;
+        String featureFilePath;
+        String dataFilePath;
+        String testFilePath;
+        switch(inputType)
+        {
+            case INPUT_TENNIS:
+                featureFilePath = "/inputFiles/tennis-attr.txt";
+                dataFilePath = "/inputFiles/tennis-train.txt";
+                testFilePath = "/inputFiles/tennis-test.txt";
+                break;
+            case INPUT_IRIS:
+                featureFilePath = "/inputFiles/iris-attr.txt";
+                dataFilePath = "/inputFiles/iris-train.txt";
+                testFilePath = "/inputFiles/iris-test.txt";
+                break;
+            case INPUT_IDENTITY:
+                featureFilePath = "/inputFiles/identity-attr.txt";
+                dataFilePath = "/inputFiles/identity-train.txt";
+                testFilePath = dataFilePath;
+                break;
+            case INPUT_BOOL:
+                featureFilePath = "/inputFiles/bool-attr.txt";
+                dataFilePath = "/inputFiles/bool-train.txt";
+                testFilePath = "/inputFiles/bool-test.txt";
+                break;
+            case INPUT_IRIS_NOISY:
+                featureFilePath = "/inputFiles/iris-attr.txt";
+                dataFilePath = "/inputFiles/iris-trainNoisy.txt";
+                testFilePath = "/inputFiles/iris-test.txt";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid input type: " + inputType);
+        }
 
         log.debug("Args: {}", Arrays.toString(args));
         if (args.length > 0)
@@ -57,7 +79,9 @@ public class ANNRunner
                 dataFilePath = args[1].trim();
                 testFilePath = args[2];
             }
-        log.info("=== CSE5693-Hw2 Decision Tree Runner ====");
+
+
+        log.info("=== CSE5693-HW3 Artificial-Neural-Network Runner ====");
 
 
         log.info("\n\n===  FILES  ===");
@@ -65,14 +89,22 @@ public class ANNRunner
         log.info("Loading data file: {}", dataFilePath);
         log.info("Loading validation file: {}", testFilePath);
 
-        List<Feature> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
-        List<Map<String, Comparable>> trainingDatas = DataLoader.loadDataFromFile(dataFilePath, features);
-        List<Map<String, Comparable>> validationDatas = DataLoader.loadDataFromFile(testFilePath, features);
+        FeatureLoader featLoader = new FeatureLoader(featureFilePath);
 
-        List<Map<String, Comparable>> allData = new ArrayList<Map<String, Comparable>>(trainingDatas);
+        List<Map<String, Comparable>> trainingDatas = DataLoader.loadDataFromFile(dataFilePath, featLoader.getAllFeatures());
+        List<Map<String, Comparable>> validationDatas = DataLoader.loadDataFromFile(testFilePath, featLoader.getAllFeatures());
+
+        List<Map<String, Comparable>> allData = new ArrayList<>(trainingDatas);
         allData.addAll(validationDatas);
 
-        Network ann = new Network(0.1,0.1,features,features,5);
+        Network ann = new Network(0.1,0.1,featLoader.getArgumentFeatures(),featLoader.getTargetFeatures(),3);
+        ann.setName(inputType);
+        log.info("== ANN Topology ==");
+        log.info(ann.getTopologyString());
+
+        ann.train(trainingDatas);
+        log.info(ann.getTopologyString());
+
         int i = 0;
     }
 }

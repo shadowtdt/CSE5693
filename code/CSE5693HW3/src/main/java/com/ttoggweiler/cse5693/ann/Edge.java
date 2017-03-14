@@ -1,7 +1,10 @@
 package com.ttoggweiler.cse5693.ann;
 
+import com.ttoggweiler.cse5693.ANNRunner;
 import com.ttoggweiler.cse5693.util.Identity;
 import com.ttoggweiler.cse5693.util.PreCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +14,19 @@ import java.util.List;
  */
 public class Edge extends Identity
 {
+    private static Logger log = LoggerFactory.getLogger(Edge.class);
+
     private static final Double DEFAULT_STARTING_WEIGHT = 0d;
     private Node sourceNode;
     private Node TargetNode;
     private List<Double> weightHistory;
     private EdgeResult mostRecentEdgeResult;
 
-    public Edge(Node sourceNode, Node targetNode, Double startingWeight)
+    public Edge(String name, Node sourceNode, Node targetNode, Double startingWeight)
     {
         PreCheck.ifNull("Must provide a source and target node",sourceNode,targetNode);
         if(sourceNode.equals(targetNode))throw new IllegalArgumentException("Source and target node cannot be equal");
+        setName(name);
         this.sourceNode = sourceNode;
         this.TargetNode = targetNode;
         this.setWeight(PreCheck.defaultTo(startingWeight,DEFAULT_STARTING_WEIGHT));
@@ -66,11 +72,26 @@ public class Edge extends Identity
         TargetNode.addInputEdgeResult(mostRecentEdgeResult);
         return mostRecentEdgeResult;
     }
-    
+
+    public void updateWeights(Double learningRate)
+    {
+        Double weightDelta = learningRate * mostRecentEdgeResult.getError() * mostRecentEdgeResult.getOutput();
+        Double newWeight = getWeight()  + weightDelta;
+        //log.debug("{}: {} -> {}",getName(),getWeight(),newWeight);
+        this.setWeight(newWeight);
+    }
+
     public Double multiplyInputByWeight(Double nodeInput)
     {
         if(nodeInput == null)throw new NullPointerException("Edge unable to Feed-Forward with null input.");
         return nodeInput * getWeight();
     }
 
+    public String toString()
+    {
+        String edgeString =  "-Edge: "+getName()+ " --> "+TargetNode.getName() + " W("+getWeight()+")";
+        if (mostRecentEdgeResult != null && mostRecentEdgeResult.getError() != null)
+            edgeString += " WE("+mostRecentEdgeResult.getWeightedError()+")";
+        return edgeString;
+    }
 }

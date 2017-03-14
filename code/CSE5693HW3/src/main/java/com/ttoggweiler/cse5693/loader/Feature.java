@@ -23,6 +23,7 @@ public class Feature<T extends Comparable<?>>
     private String name;
     private Parser.Type type;
     private HashMap<Comparable, Predicate<Map<String, Comparable>>> values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
+    private ArrayList<Comparable> valueArray;
 
     public Feature(String name, Parser.Type type, Set<T> values)
     {
@@ -36,6 +37,7 @@ public class Feature<T extends Comparable<?>>
         this.setName(name);
         this.setFeatureType(type);
         if (PreCheck.notEmpty(values)) this.setValues(Arrays.stream(values).collect(Collectors.toSet()));
+        this.valueArray = new ArrayList<>(Arrays.asList(values));
     }
 
     public UUID getId()
@@ -68,6 +70,21 @@ public class Feature<T extends Comparable<?>>
         return values.keySet();
     }
 
+    public Double getDoubleForFeatureValue(Comparable value)
+    {
+        if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
+            if(!getValues().contains(value))
+                throw new IllegalArgumentException("Feature " + getName() + " does not have a value for " + value);
+            for (int i = 0; i < valueArray.size(); i++) {
+                if(valueArray.get(i).equals(value))return ((double) i );
+            }
+            throw new IllegalArgumentException("Value not found for feature:" +getName() + " value: "+value);
+        }else
+        {
+            return Double.parseDouble(value.toString());
+        }
+    }
+
     public Predicate<Map<String, Comparable>> getPredicateForValue(T value)
     {
         if (!values.containsKey(value))
@@ -93,6 +110,8 @@ public class Feature<T extends Comparable<?>>
             valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).compareTo(value) >= 0;
             this.values.put(value, valuePredicate);
         }
+        if(this.valueArray == null) this.valueArray = new ArrayList<>();
+        this.valueArray.add(value);
         return valuePredicate;
     }
 

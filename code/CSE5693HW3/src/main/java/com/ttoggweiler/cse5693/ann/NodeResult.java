@@ -11,6 +11,7 @@ import java.util.Set;
 public class NodeResult
 {
     private Double value;
+    private Double error;
     private Set<EdgeResult> inputEdgeResults;
     private Set<EdgeResult> outputEdgeResults;
 
@@ -21,6 +22,17 @@ public class NodeResult
         this.value = value;
         this.inputEdgeResults = inputEdgeResults;
         this.outputEdgeResults = outputEdgeResults;
+    }
+
+    public void setError(Double errorValue)
+    {
+        PreCheck.ifNull("Null error value is not allowed",errorValue);
+        this.error = errorValue;
+    }
+
+    public Double getError()
+    {
+        return this.error;
     }
 
     public Set<EdgeResult> getInputEdgeResults()

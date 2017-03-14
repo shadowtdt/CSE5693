@@ -64,6 +64,12 @@ public class FeatureLoader
         return this.targetFeatures;
     }
 
+    public List<Feature> getAllFeatures()
+    {
+        List<Feature> allFeaturesList = new ArrayList<>(argumentFeatures);
+        allFeaturesList.addAll(targetFeatures);
+        return allFeaturesList;
+    }
     /* Static */
 
     /**

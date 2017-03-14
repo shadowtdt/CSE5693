@@ -19,6 +19,6 @@ public class MoreMath
 
     public static double sigmoidFunction(double sumOfInputs)
     {
-        return 1 / (1 + Math.exp(-sumOfInputs));
+        return 1 / (1 + Math.exp((-1) * sumOfInputs));
     }
 }

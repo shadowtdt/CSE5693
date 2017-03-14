@@ -13,6 +13,7 @@ public class EdgeResult
     private Double input;
     private Double output;
     private Double weight;
+    private Double error;
 
     public EdgeResult(String sourceNodeID, String targetNodeID,Double input, Double output,Double weight)
     {
@@ -72,5 +73,21 @@ public class EdgeResult
     public void setWeight(Double weight)
     {
         this.weight = weight;
+    }
+
+    public Double getError()
+    {
+        return this.error;
+    }
+
+    public void setError(Double errorValue)
+    {
+        PreCheck.ifNull("Null error value is not allowed",errorValue);
+        this.error = errorValue;
+    }
+
+    public Double getWeightedError()
+    {
+        return getError() * getWeight();
     }
 }
