@@ -4,19 +4,82 @@ import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by ttoggweiler on 2/16/17.
+ * This class extracts Feature objects from text files.
+ * That static methods can be used to extract a list of features with no separation of input/target
+ * or create an instance and the argument features and target features will be separated and accessible through getters
  */
 public class FeatureLoader
 {
+    private List<Feature> argumentFeatures = null;
+    private List<Feature> targetFeatures = null;
+
+    public FeatureLoader(String pathString)throws IOException{
+        this(getPathForString(pathString));
+    }
+
+    public FeatureLoader(Path path) throws IOException
+    {
+        List<String> linesInFile = Files.readAllLines(path);
+        List<String> argumentFeatureStringList = new ArrayList<>();
+        List<String> targetFeatureStringList = new ArrayList<>();
+
+        // Separate argument features from target features
+        for (int i = 0; i < linesInFile.size(); i++) {
+            if(PreCheck.isEmpty(linesInFile.get(i))) {
+                argumentFeatureStringList = linesInFile.subList(0,i);
+                targetFeatureStringList = linesInFile.subList(i+1,linesInFile.size());
+                break;
+            }
+        }
+
+        PreCheck.ifEmpty(()-> new IllegalStateException("No features were detected in file: " +path.toString()),argumentFeatureStringList);
+        PreCheck.ifEmpty(()-> new IllegalStateException("No target features were detected in file: " +path.toString()),targetFeatureStringList);
+
+        // Parse features from partitioned list
+        this.argumentFeatures = loadFeaturesFromArray(argumentFeatureStringList);
+        this.targetFeatures = loadFeaturesFromArray(targetFeatureStringList);
+
+        PreCheck.ifEmpty(()-> new IllegalStateException("No features were loaded from file: " +path.toString()),argumentFeatures);
+        PreCheck.ifEmpty(()-> new IllegalStateException("No target features were loaded from file: " +path.toString()),targetFeatures);
+    }
+
+    public List<Feature> getArgumentFeatures()
+    {
+        return this.argumentFeatures;
+    }
+
+    public List<Feature> getTargetFeatures()
+    {
+        return this.targetFeatures;
+    }
+
+    /* Static */
+
+    /**
+     * Loads and parses features from provided Array
+     * @param featureList Array of features
+     * @return A List of features
+     */
+    public static List<Feature> loadFeaturesFromArray(List<String> featureList)
+    {
+        PreCheck.ifEmpty(()-> new NullPointerException("Unable to load features from a null path"),featureList);
+        return featureList.stream()
+                .filter(PreCheck:: notEmpty)
+                .map(Feature::parseFeature)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Loads and parses features from provided Path
      * @param path path of the file to load
@@ -25,7 +88,6 @@ public class FeatureLoader
      */
     public static List<Feature> loadFeaturesFromPath(Path path) throws IOException
     {
-        if (path == null) throw new NullPointerException("Unable to load features from a null path");
         return Files.lines(path)
                 .filter(PreCheck:: notEmpty)
                 .map(Feature::parseFeature)
@@ -40,12 +102,23 @@ public class FeatureLoader
      */
     public static List<Feature> loadFeaturesFromFile(String pathToFeatures) throws IOException
     {
-        if (pathToFeatures == null) throw new NullPointerException("Unable to load features from a null file path string");
-        URL resource = DataLoader.class.getResource(pathToFeatures);
-        Path path = resource==null? Paths.get(pathToFeatures) : Paths.get(resource.getPath());
-        return loadFeaturesFromPath(path);
+        return loadFeaturesFromPath(getPathForString(pathToFeatures));
     }
 
+    /**
+     * Attempts to get Path object for provided path string
+     * @param pathString path to file
+     * @return Path of resource or external file
+     */
+    private static Path getPathForString(String pathString)  throws IOException
+    {
+        if (pathString == null) throw new NullPointerException("Unable to load features from a null file path string");
+        URL resource = FeatureLoader.class.getResource(pathString);
+        Path path = resource==null? Paths.get(pathString) : Paths.get(resource.getPath());
+        if(path == null || !path.toFile().exists())
+            throw new FileNotFoundException("Unable to find file as resource or system file: " + pathString);
+        return path;
+    }
 
     public static void main(String... args)
     {

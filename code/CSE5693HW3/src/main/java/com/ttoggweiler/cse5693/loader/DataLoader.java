@@ -36,7 +36,7 @@ public class DataLoader
         List<Map<String, Comparable>> data = new ArrayList<>();
         // For each example
         for (String line : lines) {
-            String[] splitLine = line.trim().split(" ");
+            String[] splitLine = line.trim().split("\\s+");
             if (splitLine.length != featureSet.size()) throw new IllegalArgumentException("Data line does not have correct number of features: " + line);
             Map<String, Comparable> dataMap = new HashMap<>();
             // for each value in example
