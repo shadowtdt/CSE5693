@@ -34,7 +34,7 @@ public class Network extends Identity
         PreCheck.ifEmpty(()-> new IllegalArgumentException("Must have at least one hidden layer"),hiddenSizes);
         List<Layer> layers = new ArrayList<>(hiddenSizes.length+2);
 
-        layers.add(new Layer("InputLayer",true,inputSize));
+        layers.add(new Layer("Input",true,inputSize));
         for (int i = 0; i < hiddenSizes.length; i++) {
             if(hiddenSizes[i] < 1) continue;
             layers.add(new Layer("H"+i,null,hiddenSizes[i]));

@@ -60,4 +60,5 @@ public class Layer extends Identity
     {
         return isInputLayer == null;
     }
+
 }

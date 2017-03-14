@@ -31,4 +31,9 @@ public class Identity
         if (PreCheck.notEmpty(name)) this.name = name.trim();
     }
 
+    public String toString()
+    {
+        return this.getName();
+    }
+
 }

@@ -119,10 +119,15 @@ public class Feature<T extends Comparable<?>>
             entropy += (-1 * matchingExampleRatio) * MoreMath.log2(matchingExampleRatio);
             entropyCalcStr += " + -" + ratioString + " log_2 " + ratioString;
         }
-        //zlog.debug("Entropy = {} = {}",entropy,entropyCalcStr);
+        //log.debug("Entropy = {} = {}",entropy,entropyCalcStr);
         return entropy;
     }
 
+    /**
+     * Partitions the input data based on this features values.
+     * @param datas a set of inputs to map to feature value
+     * @return Map for each value of this feature, to a list of examples with that value.
+     */
     public Map<T, List<Map<String, Comparable>>> getValueToDataMap(List<Map<String, Comparable>> datas)
     {
         Map<T, List<Map<String, Comparable>>> valueMap = new HashMap<>();
