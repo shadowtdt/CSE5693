@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+java -cp ../target/CSE5693-HW3-1.0-SNAPSHOT-jar-with-dependencies.jar com.ttoggweiler.cse5693.ANNRunner -afile=../src/main/resources/inputFiles/identity-attr.txt -tfile=../src/main/resources/inputFiles/identity-train.txt -vfile=../src/main/resources/inputFiles/identity-train.txt

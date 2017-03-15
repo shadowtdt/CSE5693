@@ -28,7 +28,7 @@ public class ANNRunner
     public static final double DEFAULT_MOMENTUM = 0.9;
     public static final int DEFAULT_ITERATIONS = 3000;
     public static final int DEFAULT_HIDDEN_LAYER_COUNT = 1;
-    public static final int DEFAULT_HIDDEN_NODE_COUNT = 3;
+    public static final int DEFAULT_HIDDEN_NODE_COUNT = 4;
     public static final double DEFAULT_LEARNING_RATE = 0.1;
 
     private static Logger log = LoggerFactory.getLogger(ANNRunner.class);
