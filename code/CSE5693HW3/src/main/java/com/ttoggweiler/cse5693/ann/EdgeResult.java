@@ -10,17 +10,15 @@ public class EdgeResult
 {
     private String sourceNodeID;
     private String targetNodeID;
-    private Double input;
     private Double output;
     private Double weight;
     private Double error;
 
-    public EdgeResult(String sourceNodeID, String targetNodeID,Double input, Double output,Double weight)
+    public EdgeResult(Node sourceNode, Node targetNode, Double output, Double weight)
     {
-        PreCheck.ifNull("Unable to create edge result with incomplete information",sourceNodeID,targetNodeID,input,output,weight);
-        this.sourceNodeID = sourceNodeID;
-        this.targetNodeID = targetNodeID;
-        this.input = input;
+        PreCheck.ifNull("Unable to create edge result with incomplete information",sourceNode,targetNode, output,weight);
+        this.sourceNodeID = sourceNode.getId().toString();
+        this.targetNodeID = targetNode.getId().toString();
         this.output = output;
         this.weight = weight;
     }
@@ -45,24 +43,19 @@ public class EdgeResult
         this.targetNodeID = targetNodeID;
     }
 
-    public Double getInput()
-    {
-        return input;
-    }
-
-    public void setInput(Double input)
-    {
-        this.input = input;
-    }
-
     public Double getOutput()
     {
         return output;
     }
 
-    public void setOutput(Double output)
+    public void setOutput(Double input)
     {
-        this.output = output;
+        this.output = input;
+    }
+
+    public Double getWeightedOutput()
+    {
+        return output * weight;
     }
 
     public Double getWeight()
@@ -88,6 +81,8 @@ public class EdgeResult
 
     public Double getWeightedError()
     {
-        return getError() * getWeight();
+        return error * weight;
     }
+
+
 }

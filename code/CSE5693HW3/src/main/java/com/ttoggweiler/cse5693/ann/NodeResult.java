@@ -28,6 +28,7 @@ public class NodeResult
     {
         PreCheck.ifNull("Null error value is not allowed",errorValue);
         this.error = errorValue;
+        getInputEdgeResults().forEach(res -> res.setError(error));
     }
 
     public Double getError()

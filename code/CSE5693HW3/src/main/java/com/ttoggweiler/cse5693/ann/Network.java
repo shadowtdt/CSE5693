@@ -42,6 +42,7 @@ public class Network extends Identity
         Layer inputLayer = layersInNetwork.get(0);
         Layer outputLayer = layersInNetwork.get(layersInNetwork.size()-1);
         for (int i = 0; i < 5000; i++) {
+            log.info("== Iteration {} ==",i);
             for (Map<String, Comparable> trainingExample : trainingExamples) {
                 ListIterator<Layer> layerItr = layersInNetwork.listIterator();
 
@@ -52,10 +53,10 @@ public class Network extends Identity
                 while(layerItr.hasPrevious())layerItr.previous().backPropagate();
 
                 while(layerItr.hasNext())layerItr.next().updateWeights(0.1);
-
+                log.info("== Example Result ==");
                 for (Node node : outputLayer.getNodes()) {
-                    Double prediction = node.getMostRecentNodeResult().getValue();
-                    Double error = node.getMostRecentNodeResult().getError();
+                    Double prediction = node.getLastNodeResult().getValue();
+                    Double error = node.getLastNodeResult().getError();
                     Comparable actual = trainingExample.get(node.getName());
                     log.info("O: {} vs T: {}({}) E: {}",prediction,actual,outputFeatures.get(0).getDoubleForFeatureValue(actual),error);
                 }
@@ -136,7 +137,7 @@ public class Network extends Identity
         for (Node lOneNode: layerOne.getNodes()) {
             int count = 0;
             for (Node lTwoNode : layerTwo.getNodes()) {
-                new Edge("E"+count++,lOneNode,lTwoNode, 0.05);
+                new Edge("E"+count++,lOneNode,lTwoNode, (new Random().nextDouble() -0.5) / 2);
             }
         }
     }

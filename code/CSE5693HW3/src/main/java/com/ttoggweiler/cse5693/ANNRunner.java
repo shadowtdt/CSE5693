@@ -1,14 +1,9 @@
 package com.ttoggweiler.cse5693;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.ttoggweiler.cse5693.ann.Network;
 import com.ttoggweiler.cse5693.loader.DataLoader;
-import com.ttoggweiler.cse5693.loader.Feature;
 import com.ttoggweiler.cse5693.loader.FeatureLoader;
-import com.ttoggweiler.cse5693.util.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

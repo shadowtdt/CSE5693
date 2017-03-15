@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents a layer of Nodes in the network
@@ -15,7 +16,6 @@ public class Layer extends Identity
 {
     private Boolean isInputLayer;
     private List<Node> nodesInLayer;
-    private LayerResult mostRecentLayerResult;
 
     public Layer(String name, Boolean isInput, int numberOfNodes)
     {
@@ -32,11 +32,6 @@ public class Layer extends Identity
         return this.nodesInLayer;
     }
 
-    public LayerResult getMostRecentLayerResult()
-    {
-        return mostRecentLayerResult;
-    }
-
     public void setNodeValues(Map<String, Double> inputValues)
     {
         if(isHiddenLayer())throw new IllegalArgumentException("Only input and output layers can set values");
@@ -47,28 +42,20 @@ public class Layer extends Identity
 
     public LayerResult feedForward()
     {
-        Set<NodeResult> nodeResults = new HashSet<>(nodesInLayer.size());
-        for (Node node : nodesInLayer) {
-            NodeResult nodeResult = node.feedForward();
-            nodeResults.add(nodeResult);
-        }
-        mostRecentLayerResult = new LayerResult(nodeResults);
-        return mostRecentLayerResult;
+        return new LayerResult(nodesInLayer.stream()
+                .map(Node :: feedForward)
+                .collect(Collectors.toSet()));
     }
 
     public void backPropagate()
     {
         if(isInputLayer())return;
-        for (Node node : nodesInLayer) {
-            node.backPropagate();
-        }
+        nodesInLayer.forEach(Node::backPropagate);
     }
 
     public void updateWeights(Double learningRate)
     {
-        for (Node node : nodesInLayer) {
-            node.updateWeights(learningRate);
-        }
+        nodesInLayer.forEach(node -> node.updateWeights(learningRate));
     }
 
     public boolean isInputLayer()

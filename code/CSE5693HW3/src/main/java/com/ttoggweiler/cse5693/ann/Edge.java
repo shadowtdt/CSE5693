@@ -1,6 +1,5 @@
 package com.ttoggweiler.cse5693.ann;
 
-import com.ttoggweiler.cse5693.ANNRunner;
 import com.ttoggweiler.cse5693.util.Identity;
 import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
@@ -18,9 +17,9 @@ public class Edge extends Identity
 
     private static final Double DEFAULT_STARTING_WEIGHT = 0d;
     private Node sourceNode;
-    private Node TargetNode;
+    private Node targetNode;
     private List<Double> weightHistory;
-    private EdgeResult mostRecentEdgeResult;
+    private EdgeResult lastEdgeResult;
 
     public Edge(String name, Node sourceNode, Node targetNode, Double startingWeight)
     {
@@ -28,10 +27,10 @@ public class Edge extends Identity
         if(sourceNode.equals(targetNode))throw new IllegalArgumentException("Source and target node cannot be equal");
         setName(name);
         this.sourceNode = sourceNode;
-        this.TargetNode = targetNode;
+        this.targetNode = targetNode;
         this.setWeight(PreCheck.defaultTo(startingWeight,DEFAULT_STARTING_WEIGHT));
         this.sourceNode.addOutputEdge(this);
-        this.TargetNode.addInputEdge(this);
+        this.targetNode.addInputEdge(this);
     }
 
     public void setWeight(Double newWeight)
@@ -57,41 +56,35 @@ public class Edge extends Identity
 
     public Node getTargetNode()
     {
-        return TargetNode;
+        return targetNode;
     }
     
-    public EdgeResult getMostRecentEdgeResult()
+    public EdgeResult getLastEdgeResult()
     {
-        return mostRecentEdgeResult;
+        return lastEdgeResult;
     }
     
     public EdgeResult feedForward(Double nodeInput)
     {
-        Double result = multiplyInputByWeight(nodeInput);
-        mostRecentEdgeResult = new EdgeResult(this.sourceNode.getId().toString(),this.TargetNode.getId().toString(),nodeInput,result,getWeight());
-        TargetNode.addInputEdgeResult(mostRecentEdgeResult);
-        return mostRecentEdgeResult;
+        lastEdgeResult = new EdgeResult(sourceNode,targetNode,nodeInput,getWeight());
+        targetNode.addInputEdgeResult(lastEdgeResult);
+        return lastEdgeResult;
     }
 
     public void updateWeights(Double learningRate)
     {
-        Double weightDelta = learningRate * mostRecentEdgeResult.getError() * mostRecentEdgeResult.getOutput();
-        Double newWeight = getWeight()  + weightDelta;
+        Double weightDelta = (learningRate) * sourceNode.getLastNodeResult().getValue() * targetNode.getLastNodeResult().getError();
+        Double newWeight = getWeight() + weightDelta;
         //log.debug("{}: {} -> {}",getName(),getWeight(),newWeight);
         this.setWeight(newWeight);
     }
 
-    public Double multiplyInputByWeight(Double nodeInput)
-    {
-        if(nodeInput == null)throw new NullPointerException("Edge unable to Feed-Forward with null input.");
-        return nodeInput * getWeight();
-    }
-
     public String toString()
     {
-        String edgeString =  "-Edge: "+getName()+ " --> "+TargetNode.getName() + " W("+getWeight()+")";
-        if (mostRecentEdgeResult != null && mostRecentEdgeResult.getError() != null)
-            edgeString += " WE("+mostRecentEdgeResult.getWeightedError()+")";
+        String edgeString =  "-Edge: "+getName()+ " --> "+ targetNode.getName() + " W("+getWeight()+")";
+        if (lastEdgeResult != null && lastEdgeResult.getError() != null)
+            edgeString += " WE("+ lastEdgeResult.getWeightedError()+")";
         return edgeString;
     }
+
 }

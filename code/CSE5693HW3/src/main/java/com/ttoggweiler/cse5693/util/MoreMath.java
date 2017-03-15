@@ -1,6 +1,6 @@
 package com.ttoggweiler.cse5693.util;
 
-import java.util.HashMap;
+import java.util.Collection;
 
 /**
  * Created by ttoggweiler on 2/18/17.
@@ -19,6 +19,6 @@ public class MoreMath
 
     public static double sigmoidFunction(double sumOfInputs)
     {
-        return 1 / (1 + Math.exp((-1) * sumOfInputs));
+        return 1 / (1 + Math.exp( (-1 * sumOfInputs)));
     }
 }
