@@ -85,12 +85,22 @@ public class Network extends Identity
             while (layerItr.hasNext()) layerItr.next().feedForward();
 
             Feature outputFeature = outputFeatures.get(0);
+
+            StringBuilder inputs = new StringBuilder("\nData: ");
+            trainingExample.forEach((k,v )->inputs.append(k+"("+v+"), "));
+            for (Layer layer : layersInNetwork) {
+                inputs.append("\nLayer("+layer.getName() + "): ");
+                layer.getNodes().forEach(node ->
+                        inputs.append(node.getName()+"("+outputFeature.getValueForDouble(node.getLastNodeResult().getValue())+" : "+node.getLastNodeResult().getValue()+"), "));
+            }
+            log.info(inputs.toString());
+
             for (Node node : outputLayer.getNodes()) {
                 Double prediction = node.getLastNodeResult().getValue();
                 Comparable predictionFromDouble = outputFeatures.get(0).getValueForDouble(prediction);
                 Double error = node.getLastNodeResult().getError();
                 Comparable actual = trainingExample.get(node.getName());
-                log.info("{} Prediction: {} ({}) Actual: {} ({})",node.getName(),prediction,predictionFromDouble,outputFeature.getDoubleForFeatureValue(actual),actual);
+                //log.info("{} Prediction: {} ({}) Actual: {} ({})",node.getName(),prediction,predictionFromDouble,outputFeature.getDoubleForFeatureValue(actual),actual);
                 if(predictionFromDouble.equals(actual))correctPredictions++;
             }
         }

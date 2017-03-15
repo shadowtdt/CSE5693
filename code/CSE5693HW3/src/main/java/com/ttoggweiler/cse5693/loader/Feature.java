@@ -88,7 +88,7 @@ public class Feature<T extends Comparable<?>>
     {
         Double partitionSize = (1d/valueArray.size());
         int index = ((int) Math.round(doubleValue / partitionSize));
-        if(index>valueArray.size()) index = valueArray.size();
+        if(index>valueArray.size()-1) index = valueArray.size()-1;
         return valueArray.get(index);
     }
 
