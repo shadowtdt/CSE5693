@@ -18,3 +18,4 @@ Logs can be found in /logs
 Log Config file: /src/main/resources/log4j2.xml
 Change level="info" for the package you would like to change
 ** Note this will require a recompile by maven **
+-Dlog4j.configuration={path to file}
