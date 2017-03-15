@@ -53,9 +53,9 @@ public class Layer extends Identity
         nodesInLayer.forEach(Node::backPropagate);
     }
 
-    public void updateWeights(Double learningRate)
+    public void updateWeights(Double learningRate, Double momentum)
     {
-        nodesInLayer.forEach(node -> node.updateWeights(learningRate));
+        nodesInLayer.forEach(node -> node.updateWeights(learningRate, momentum));
     }
 
     public boolean isInputLayer()

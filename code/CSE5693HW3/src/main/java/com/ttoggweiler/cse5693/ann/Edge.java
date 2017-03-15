@@ -20,6 +20,7 @@ public class Edge extends Identity
     private Node targetNode;
     private List<Double> weightHistory;
     private EdgeResult lastEdgeResult;
+    private Double lastWeightDelta = 0d;
 
     public Edge(String name, Node sourceNode, Node targetNode, Double startingWeight)
     {
@@ -71,9 +72,12 @@ public class Edge extends Identity
         return lastEdgeResult;
     }
 
-    public void updateWeights(Double learningRate)
+    public void updateWeights(Double learningRate, Double momentum)
     {
         Double weightDelta = (learningRate) * sourceNode.getLastNodeResult().getValue() * targetNode.getLastNodeResult().getError();
+        if(momentum != null)
+            weightDelta += momentum * lastWeightDelta;
+        lastWeightDelta = weightDelta;
         Double newWeight = getWeight() + weightDelta;
         //log.debug("{}: {} -> {}",getName(),getWeight(),newWeight);
         this.setWeight(newWeight);

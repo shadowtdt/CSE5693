@@ -96,11 +96,11 @@ public class Node extends Identity
         return MoreMath.sigmoidFunction(netInput);
     }
 
-    public void updateWeights(Double learningRate)
+    public void updateWeights(Double learningRate, Double momentum)
     {
         if(isInputNode())return;
         for (Edge inputEdges : inputEdges) {
-            inputEdges.updateWeights(learningRate);
+            inputEdges.updateWeights(learningRate,momentum);
         }
     }
 

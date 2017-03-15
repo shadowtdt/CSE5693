@@ -92,14 +92,16 @@ public class ANNRunner
         List<Map<String, Comparable>> allData = new ArrayList<>(trainingDatas);
         allData.addAll(validationDatas);
 
-        Network ann = new Network(0.1,0.1,featLoader.getArgumentFeatures(),featLoader.getTargetFeatures(),3);
+        Network ann = new Network(0.1,0.9,5000,featLoader.getArgumentFeatures(),featLoader.getTargetFeatures(),3);
         ann.setName(inputType);
         log.info("== ANN Topology ==");
         log.info(ann.getTopologyString());
 
+        log.info("== Train ANN ==");
         ann.train(trainingDatas);
-        log.info(ann.getTopologyString());
 
-        int i = 0;
+        log.info("== Test ANN ==");
+        Double percentCorrect = ann.getAccuracy(trainingDatas);
+        log.info("{}% correct ",percentCorrect * 100);
     }
 }

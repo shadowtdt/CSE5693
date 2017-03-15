@@ -25,13 +25,15 @@ public class Network extends Identity
 
     private double learningRate;
     private double momentum;
+    private int iterations;
     private List<Feature> inputFeatures;
     private List<Feature> outputFeatures;
 
-    public Network(double learningRate, double momentum, List<Feature> inputFeatures, List<Feature> outputFeatures, Integer... hiddenLayerSizes)
+    public Network(double learningRate, double momentum,int iterations, List<Feature> inputFeatures, List<Feature> outputFeatures, Integer... hiddenLayerSizes)
     {
         this.learningRate = learningRate;
         this.momentum = momentum;
+        this.iterations = iterations;
         this.inputFeatures = inputFeatures;
         this.outputFeatures = outputFeatures;
         layersInNetwork = createLayers(inputFeatures,outputFeatures,hiddenLayerSizes);
@@ -41,27 +43,58 @@ public class Network extends Identity
     {
         Layer inputLayer = layersInNetwork.get(0);
         Layer outputLayer = layersInNetwork.get(layersInNetwork.size()-1);
-        for (int i = 0; i < 5000; i++) {
-            log.info("== Iteration {} ==",i);
+        for (int i = 0; i < iterations; i++) {
+            double correctPredictions = 0;
+
             for (Map<String, Comparable> trainingExample : trainingExamples) {
                 ListIterator<Layer> layerItr = layersInNetwork.listIterator();
 
+                // FeedForward
                 inputLayer.setNodeValues(convertExampleValuesToDouble(trainingExample,inputFeatures));
                 while(layerItr.hasNext())layerItr.next().feedForward();
-
+                // BackPropagation
                 outputLayer.setNodeValues(convertExampleValuesToDouble(trainingExample,outputFeatures));
                 while(layerItr.hasPrevious())layerItr.previous().backPropagate();
+                // Weight update
+                while(layerItr.hasNext())layerItr.next().updateWeights(learningRate,momentum);
 
-                while(layerItr.hasNext())layerItr.next().updateWeights(0.1);
-                log.info("== Example Result ==");
+                Feature outputFeature = outputFeatures.get(0);
                 for (Node node : outputLayer.getNodes()) {
                     Double prediction = node.getLastNodeResult().getValue();
+                    Comparable predictionFromDouble = outputFeature.getValueForDouble(prediction);
                     Double error = node.getLastNodeResult().getError();
                     Comparable actual = trainingExample.get(node.getName());
-                    log.info("O: {} vs T: {}({}) E: {}",prediction,actual,outputFeatures.get(0).getDoubleForFeatureValue(actual),error);
+                    //log.debug("{} Prediction: {}({}) Actual: {}({})",node.getName(),prediction,predictionFromDouble,outputFeature.getDoubleForFeatureValue(actual),actual);
+                    if(predictionFromDouble.equals(actual))correctPredictions++;
                 }
             }
+            if(i%100 == 0 || i<100)
+                log.info("== Iteration {} @ {}% ==",i,(correctPredictions/trainingExamples.size())/outputFeatures.size()*100);
+
         }
+    }
+
+    public Double getAccuracy(List<Map<String, Comparable>> trainingExamples)
+    {
+        double correctPredictions = 0;
+        Layer inputLayer = layersInNetwork.get(0);
+        Layer outputLayer = layersInNetwork.get(layersInNetwork.size() - 1);
+        for (Map<String, Comparable> trainingExample : trainingExamples) {
+            ListIterator<Layer> layerItr = layersInNetwork.listIterator();
+            inputLayer.setNodeValues(convertExampleValuesToDouble(trainingExample, inputFeatures));
+            while (layerItr.hasNext()) layerItr.next().feedForward();
+
+            Feature outputFeature = outputFeatures.get(0);
+            for (Node node : outputLayer.getNodes()) {
+                Double prediction = node.getLastNodeResult().getValue();
+                Comparable predictionFromDouble = outputFeatures.get(0).getValueForDouble(prediction);
+                Double error = node.getLastNodeResult().getError();
+                Comparable actual = trainingExample.get(node.getName());
+                log.info("{} Prediction: {} ({}) Actual: {} ({})",node.getName(),prediction,predictionFromDouble,outputFeature.getDoubleForFeatureValue(actual),actual);
+                if(predictionFromDouble.equals(actual))correctPredictions++;
+            }
+        }
+        return (correctPredictions/trainingExamples.size())/outputFeatures.size();
     }
 
     public Layer getInputLayer()
@@ -137,7 +170,7 @@ public class Network extends Identity
         for (Node lOneNode: layerOne.getNodes()) {
             int count = 0;
             for (Node lTwoNode : layerTwo.getNodes()) {
-                new Edge("E"+count++,lOneNode,lTwoNode, (new Random().nextDouble() -0.5) / 2);
+                new Edge("E"+count++,lOneNode,lTwoNode, (new Random().nextDouble() -0.5) );
             }
         }
     }

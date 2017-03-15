@@ -73,16 +73,23 @@ public class Feature<T extends Comparable<?>>
     public Double getDoubleForFeatureValue(Comparable value)
     {
         if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
-            if(!getValues().contains(value))
-                throw new IllegalArgumentException("Feature " + getName() + " does not have a value for " + value);
+            if(!getValues().contains(value)) throw new IllegalArgumentException("Feature " + getName() + " does not have a value for " + value);
             for (int i = 0; i < valueArray.size(); i++) {
-                if(valueArray.get(i).equals(value))return ((double) i );
+                if(valueArray.get(i).equals(value))return ((double) i * (1d/valueArray.size()) );
             }
             throw new IllegalArgumentException("Value not found for feature:" +getName() + " value: "+value);
         }else
         {
             return Double.parseDouble(value.toString());
         }
+    }
+
+    public Comparable getValueForDouble(double doubleValue)
+    {
+        Double partitionSize = (1d/valueArray.size());
+        int index = ((int) Math.round(doubleValue / partitionSize));
+        if(index>valueArray.size()) index = valueArray.size();
+        return valueArray.get(index);
     }
 
     public Predicate<Map<String, Comparable>> getPredicateForValue(T value)
