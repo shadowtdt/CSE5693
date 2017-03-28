@@ -1,0 +1,5 @@
+Sunny warm normal strong warm same yes
+Sunny warm high strong warm same yes
+rainy cold high strong warm change no
+sunny warm high strong cool change yes
+sunny warm normal weak warm same no

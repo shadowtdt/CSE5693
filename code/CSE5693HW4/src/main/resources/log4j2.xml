@@ -16,11 +16,11 @@
             <AppenderRef ref="annlog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693.ann" level="debug" additivity="false">
+        <logger name="com.ttoggweiler.com.ttoggweiler.cse5693.ann" level="debug" additivity="false">
             <AppenderRef ref="annlog" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.cse5693.loader" level="debug" additivity="false">
+        <logger name="com.ttoggweiler.com.ttoggweiler.cse5693.loader" level="debug" additivity="false">
             <AppenderRef ref="annlog" />
             <AppenderRef ref="console" />
         </logger>
