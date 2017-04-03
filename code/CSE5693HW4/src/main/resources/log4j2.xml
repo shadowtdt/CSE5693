@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="warn" name="ANN">
+<Configuration status="warn" name="LOGGER">
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%-5level %logger{1} - %msg%n}"/>
         </Console>
-        <File name="annlog" append="false" fileName="logs/ann.log">
+        <File name="logFile" append="false" fileName="logs/genetic.log">
             <PatternLayout pattern="%d{HH:mm:ss} %p %c{4} [%t] %m%n"/>
         </File>
     </Appenders>
     <Loggers>
-        <Root level="warn">
+        <Root level="debug">
             <AppenderRef ref="console"/>
         </Root>
         <logger name="com.ttoggweiler.cse5693" level="debug" additivity="false">
-            <AppenderRef ref="annlog" />
+            <AppenderRef ref="logFile" />
             <AppenderRef ref="console" />
         </logger>
-        <logger name="com.ttoggweiler.com.ttoggweiler.cse5693.ann" level="debug" additivity="false">
-            <AppenderRef ref="annlog" />
-            <AppenderRef ref="console" />
-        </logger>
-        <logger name="com.ttoggweiler.com.ttoggweiler.cse5693.loader" level="debug" additivity="false">
-            <AppenderRef ref="annlog" />
+        <logger name="com.ttoggweiler.cse5693.genetic" level="debug" additivity="false">
+            <AppenderRef ref="logFile" />
             <AppenderRef ref="console" />
         </logger>
 

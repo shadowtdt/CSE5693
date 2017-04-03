@@ -3,9 +3,9 @@ package com.ttoggweiler.cse5693.util;
 import java.util.UUID;
 
 /**
- * Created by ttoggweiler on 3/9/17.
+ * Base classed that is used to give objects a unique identity
  */
-public class Identity
+public abstract class Identity
 {
     private UUID id = UUID.randomUUID();
     private String name = id.toString();

@@ -7,7 +7,7 @@ This will create two jars, one with and one without dependencies. They will be c
 
 todo  Update
 To run the jar, from /cse5693hw23 run:
-java -cp ../target/CSE5693-HW3-1.0-SNAPSHOT-jar-with-dependencies.jar com.ttoggweiler.com.ttoggweiler.cse5693.ANNRunner
+java -cp ../target/CSE5693-HW3-1.0-SNAPSHOT-jar-with-dependencies.jar com.ttoggweiler.com.ttoggweiler.cse5693.GeneticRunner
 
 with args:
 -afile=             argument file path

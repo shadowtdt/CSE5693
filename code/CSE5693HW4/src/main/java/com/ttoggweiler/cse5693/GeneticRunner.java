@@ -1,10 +1,9 @@
 package com.ttoggweiler.cse5693;
 
 import com.codahale.metrics.MetricRegistry;
-import com.ttoggweiler.cse5693.ann.Network;
-import com.ttoggweiler.cse5693.loader.DataLoader;
-import com.ttoggweiler.cse5693.loader.FeatureLoader;
-import com.ttoggweiler.cse5693.loader.Parser;
+import com.ttoggweiler.cse5693.feature.DataLoader;
+import com.ttoggweiler.cse5693.feature.FeatureLoader;
+import com.ttoggweiler.cse5693.feature.Parser;
 import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,7 @@ import java.util.Map;
 /**
  * Created by ttoggweiler on 3/7/17.
  */
-public class ANNRunner
+public class GeneticRunner
 {
     public static final String INPUT_TENNIS = "tennis";
     public static final String INPUT_IRIS = "iris";
@@ -25,13 +24,13 @@ public class ANNRunner
     public static final String INPUT_BOOL = "bool";
     public static final String INPUT_IRIS_NOISY = "iris-noisy";
 
-    public static final double DEFAULT_MOMENTUM = 0.9;
-    public static final int DEFAULT_ITERATIONS = 3000;
-    public static final int DEFAULT_HIDDEN_LAYER_COUNT = 1;
-    public static final int DEFAULT_HIDDEN_NODE_COUNT = 4;
-    public static final double DEFAULT_LEARNING_RATE = 0.1;
+//    public static final double DEFAULT_MOMENTUM = 0.9;
+//    public static final int DEFAULT_ITERATIONS = 3000;
+//    public static final int DEFAULT_HIDDEN_LAYER_COUNT = 1;
+//    public static final int DEFAULT_HIDDEN_NODE_COUNT = 4;
+//    public static final double DEFAULT_LEARNING_RATE = 0.1;
 
-    private static Logger log = LoggerFactory.getLogger(ANNRunner.class);
+    private static Logger log = LoggerFactory.getLogger(GeneticRunner.class);
     private static final MetricRegistry metrics = new MetricRegistry();
 
     public static void main(String[] args) throws Exception
@@ -41,11 +40,11 @@ public class ANNRunner
         String dataFilePath = null;
         String testFilePath = null;
 
-        double momentum = DEFAULT_MOMENTUM;
-        double learningRate = DEFAULT_LEARNING_RATE;
-        int iterations = DEFAULT_ITERATIONS;
-        int hiddenLayers = DEFAULT_HIDDEN_LAYER_COUNT;
-        int hiddenNodes = DEFAULT_HIDDEN_NODE_COUNT;
+//        double momentum = DEFAULT_MOMENTUM;
+//        double learningRate = DEFAULT_LEARNING_RATE;
+//        int iterations = DEFAULT_ITERATIONS;
+//        int hiddenLayers = DEFAULT_HIDDEN_LAYER_COUNT;
+//        int hiddenNodes = DEFAULT_HIDDEN_NODE_COUNT;
 
         log.debug("Args: {}", Arrays.toString(args));
 
@@ -65,26 +64,26 @@ public class ANNRunner
                     testFilePath = keyValue[1];
                     log.info("Set validation file to {}",testFilePath);
                     break;
-                case "-momentum":
-                    momentum = Parser.toDouble(keyValue[1]).orElse(DEFAULT_MOMENTUM);
-                    log.info("Set momentum to {}",momentum);
-                    break;
-                case "-iterations":
-                    iterations = Parser.toInteger(keyValue[1]).orElse(DEFAULT_ITERATIONS);
-                    log.info("Set iterations to {}",iterations);
-                    break;
-                case "-learnrate":
-                    learningRate = Parser.toDouble(keyValue[1]).orElse(DEFAULT_LEARNING_RATE);
-                    log.info("Set learning rate to {}",learningRate);
-                    break;
-                case "-hlayers":
-                    hiddenLayers = Parser.toInteger(keyValue[1]).orElse(DEFAULT_HIDDEN_LAYER_COUNT);
-                    log.info("Set hidden layers to to {}",hiddenLayers);
-                    break;
-                case "-hnodes":
-                    hiddenNodes = Parser.toInteger(keyValue[1]).orElse(DEFAULT_HIDDEN_NODE_COUNT);
-                    log.info("Set hidden nodes to to {}",hiddenNodes);
-                    break;
+//                case "-momentum":
+//                    momentum = Parser.toDouble(keyValue[1]).orElse(DEFAULT_MOMENTUM);
+//                    log.info("Set momentum to {}",momentum);
+//                    break;
+//                case "-iterations":
+//                    iterations = Parser.toInteger(keyValue[1]).orElse(DEFAULT_ITERATIONS);
+//                    log.info("Set iterations to {}",iterations);
+//                    break;
+//                case "-learnrate":
+//                    learningRate = Parser.toDouble(keyValue[1]).orElse(DEFAULT_LEARNING_RATE);
+//                    log.info("Set learning rate to {}",learningRate);
+//                    break;
+//                case "-hlayers":
+//                    hiddenLayers = Parser.toInteger(keyValue[1]).orElse(DEFAULT_HIDDEN_LAYER_COUNT);
+//                    log.info("Set hidden layers to to {}",hiddenLayers);
+//                    break;
+//                case "-hnodes":
+//                    hiddenNodes = Parser.toInteger(keyValue[1]).orElse(DEFAULT_HIDDEN_NODE_COUNT);
+//                    log.info("Set hidden nodes to to {}",hiddenNodes);
+//                    break;
                 case "-input":
                     inputType = keyValue[1];
                     log.info("Set input files to {}",inputType);
@@ -95,7 +94,7 @@ public class ANNRunner
         }
 
         if (PreCheck.isEmpty(featureFilePath, dataFilePath, testFilePath) && PreCheck.isEmpty(inputType))
-            inputType = INPUT_IDENTITY;
+            inputType = INPUT_IRIS;
 
         if (!PreCheck.isEmpty(inputType)) {
             switch (inputType) {
@@ -148,22 +147,5 @@ public class ANNRunner
         List<Map<String, Comparable>> allData = new ArrayList<>(trainingDatas);
         allData.addAll(validationDatas);
 
-        Integer[] hlayers = new Integer[hiddenLayers];
-        for (int i = 0; i < hlayers.length; i++) {
-            hlayers[i]=hiddenNodes;
-        }
-
-        Network ann = new Network(learningRate, momentum, iterations, featLoader.getArgumentFeatures(), featLoader.getTargetFeatures(), hlayers);
-        ann.setName(inputType);
-
-        log.info("== ANN Topology ==");
-        log.info(ann.getTopologyString());
-
-        log.info("== Train ANN ==");
-        ann.train(trainingDatas);
-
-        log.info("== Test ANN ==");
-        Double percentCorrect = ann.getAccuracy(validationDatas);
-        log.info("Classified {}% correct ", percentCorrect * 100);
     }
 }

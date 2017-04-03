@@ -1,6 +1,6 @@
 package util;
 
-import com.ttoggweiler.cse5693.loader.Parser;
+import com.ttoggweiler.cse5693.feature.Parser;
 import org.junit.Test;
 
 import java.util.HashMap;
