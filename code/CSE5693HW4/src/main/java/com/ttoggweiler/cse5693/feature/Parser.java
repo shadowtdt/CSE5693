@@ -12,6 +12,7 @@ import java.util.Optional;
  */
 public class Parser
 {
+    //todo Date, binary, hex, ....
     public enum Type{
         BOOLEAN,
         FLOAT, DOUBLE,

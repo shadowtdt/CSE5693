@@ -1,6 +1,5 @@
 package com.ttoggweiler.cse5693.genetic.fitness.metric;
 
-import com.ttoggweiler.cse5693.rule.Classifier;
 import com.ttoggweiler.cse5693.rule.Performance;
 
 /**
@@ -11,5 +10,5 @@ import com.ttoggweiler.cse5693.rule.Performance;
  */
 public abstract class FitnessMetric
 {
-    abstract double measureFitness(Performance performance);
+    public abstract double measureFitness(Performance performance);
 }

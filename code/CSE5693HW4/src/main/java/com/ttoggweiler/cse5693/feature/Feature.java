@@ -3,27 +3,22 @@ package com.ttoggweiler.cse5693.feature;
 import com.ttoggweiler.cse5693.util.MoreMath;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * Created by ttoggweiler on 2/15/17.
  */
-public class Feature<T extends Comparable<?>>
+public class Feature<T extends Comparable>
 {
     private UUID id = UUID.randomUUID();
     private String name;
     private Parser.Type type;
-    private HashMap<Comparable, Predicate<Map<String, Comparable>>> values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
-    private ArrayList<Comparable> valueArray;
+
+    //todo better value handling
+    private Map<T, Predicate<Map<String, T>>> values = new HashMap<>();
+    private List<Comparable> valueArray;
 
     public Feature(String name, Parser.Type type, Set<T> values)
     {
@@ -65,12 +60,18 @@ public class Feature<T extends Comparable<?>>
         if (!PreCheck.isNull(type)) this.type = type;
     }
 
-    public Set<Comparable> getValues()
+    public Collection<T> getValues()
     {
         return values.keySet();
     }
 
-    public Double getDoubleForFeatureValue(Comparable value)
+    //todo put on type?
+    public boolean isContinuous()
+    {
+        return PreCheck.contains(this.type, Parser.Type.INTEGER, Parser.Type.LONG, Parser.Type.FLOAT, Parser.Type.DOUBLE);
+    }
+
+    public Double featureValueToDouble(Comparable value)
     {
         if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
             if(!getValues().contains(value)) throw new IllegalArgumentException("Feature " + getName() + " does not have a value for " + value);
@@ -84,7 +85,7 @@ public class Feature<T extends Comparable<?>>
         }
     }
 
-    public Comparable getValueForDouble(double doubleValue)
+    public Comparable doubleToFeatureValue(double doubleValue)
     {
         Double partitionSize = (1d/valueArray.size());
         int index = ((int) Math.round(doubleValue / partitionSize));
@@ -92,11 +93,17 @@ public class Feature<T extends Comparable<?>>
         return valueArray.get(index);
     }
 
-    public Predicate<Map<String, Comparable>> getPredicateForValue(T value)
+    @Deprecated
+    public Predicate<Map<String, T>> getPredicateForValue(T value)
     {
         if (!values.containsKey(value))
             throw new IllegalArgumentException("No predicate found for feature value: " + this.getName() + " : " + value);
         else return values.get(value);
+    }
+
+    public Collection<Predicate<Map<String, T>>> getValuePredicates()
+    {
+        return values.values();
     }
 
     public void setValues(Set<T> values)
@@ -104,17 +111,17 @@ public class Feature<T extends Comparable<?>>
         if (!PreCheck.isEmpty(values)) values.forEach(this::addValue);
     }
 
-    public Predicate<Map<String, Comparable>> addValue(T value)
+    public Predicate<Map<String, T>> addValue(T value)
     {
-        if (PreCheck.isEmpty(this.values)) this.values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
+        if (PreCheck.isEmpty(this.values)) this.values = new HashMap<>();
         PreCheck.ifNull("Unable to add null value to feature "+ this.getName(), value);
 
-        Predicate<Map<String, Comparable>> valuePredicate;
+        Predicate<Map<String, T>> valuePredicate;
         if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
-            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).equals(value);
+            valuePredicate = map -> map.containsKey(this.getName()) && map.get(this.getName()).equals(value);
             this.values.put(value, valuePredicate);
         } else {
-            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).compareTo(value) >= 0;
+            valuePredicate = map -> map.containsKey(this.getName()) && map.get(this.getName()).compareTo(value) >= 0;
             this.values.put(value, valuePredicate);
         }
         if(this.valueArray == null) this.valueArray = new ArrayList<>();
@@ -129,6 +136,8 @@ public class Feature<T extends Comparable<?>>
         return valueCounts;
     }
 
+
+    // todo move to util class
     public Double getEntropy(List<Map<String, Comparable>> examples)
     {
         Double entropy = 0d;

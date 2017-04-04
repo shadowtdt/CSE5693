@@ -1,22 +1,28 @@
 package com.ttoggweiler.cse5693.rule;
 
 import com.ttoggweiler.cse5693.feature.Feature;
+import com.ttoggweiler.cse5693.util.RandomUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by ttoggweiler on 4/3/17.
  */
-public class Rule extends Classifier implements Predicate<Map<String,Comparable>>
+public class Rule extends Classifier
 {
 
 //    private Rule mom;
 //    private Rule dad;
-    private List<PreCondition> preConditions;
-    private List<PostCondition> postConditions;
+    // todo map string -> condition
+    private List<Condition> preConditions;
+//    private List<Condition> postConditions;
+    private Map<String,Comparable> prediction = new HashMap<>();
 
 //    public Rule(List<PreCondition> preConditionList, List<PostCondition> postConditionList, Rule mom, Rule dad)
 //    {
@@ -26,54 +32,64 @@ public class Rule extends Classifier implements Predicate<Map<String,Comparable>
 //        this.dad = dad;
 //    }
 
-    public Rule(List<Feature> featureList, List<Feature> targetFeatureList)
+    public Rule(List<Feature<? extends Comparable>> featureList, List<Feature<? extends Comparable>> targetFeatureList)
     {
-        featureList.forEach(feature -> this.addPrecondition(new PreCondition(feature)));
-        targetFeatureList.forEach(targetFeature -> this.addPostCondition(new PostCondition(targetFeature)));
         this.setTargetFeatures(targetFeatureList);
+        this.setFeatures(featureList);
+        this.setPreConditions(featureList.stream().map(Condition::new).collect(Collectors.toList()));
+
+        for (Feature<? extends Comparable> feature : targetFeatureList) {
+            Comparable c = RandomUtil.selectRandomElement(feature.getValues());
+            prediction.put(feature.getName(),c);
+        }
+        targetFeatureList.forEach(tf -> prediction.put(tf.getName(), RandomUtil.selectRandomElement(tf.getValues())));
+    }
+
+
+
+    @Override
+    public Map<String,? extends Comparable> classifyExample(Map<String, ? extends Comparable> example)
+    {
+        return test(example) ? prediction : Collections.emptyMap();
     }
 
     @Override
-    public Comparable classifyExample(Map<String, Comparable> example)
+    public int getNumberOfBits()
     {
-        if(this.test(example))return getPostConditions().get(0).getValues().get(0);// fixme, first condition and value
-        return null;
+        return preConditions.stream().mapToInt(c -> c.getConditionPredicates().size()).sum();
+                // fixme + getTargetFeatures().size();
     }
 
-    public void addPrecondition(PreCondition preCondition)
+    @Override
+    public Predicate<Map<String,? extends Comparable>> getPredicate()
     {
-        if(preConditions == null) preConditions = new ArrayList<>();
-        preConditions.add(preCondition);
-    }
-
-    public void addPostCondition(PostCondition postCondition)
-    {
-        if(postConditions == null) postConditions = new ArrayList<>();
-        postConditions.add(postCondition);
-    }
-
-    public Predicate<Map<String,Comparable>> getPreconditionPredicate()
-    {
-        Predicate<Map<String,Comparable>> combinedPredicate = null;
-        for (Predicate<Map<String, Comparable>> prePredicate : preConditions) {
+        Predicate<Map<String,? extends Comparable>> combinedPredicate = null;
+        for (Predicate<Map<String,? extends Comparable>> prePredicate : preConditions) {
             if(combinedPredicate == null) combinedPredicate = prePredicate;
             else combinedPredicate.and(prePredicate);
         }
         return combinedPredicate;
     }
 
-    public List<PreCondition> getPreConditions()
+    public void setPreConditions(List<Condition> preConditions)
+    {
+        this.preConditions = preConditions;
+    }
+
+//    public void addPostCondition(Condition postCondition)
+//    {
+//        if(postConditions == null) postConditions = new ArrayList<>();
+//        postConditions.add(postCondition);
+//    }
+
+    public List<Condition> getPreConditions()
     {
         return preConditions;
     }
 
-    public List<PostCondition> getPostConditions()
-    {
-        return postConditions;
-    }
-    @Override
-    public boolean test(Map<String, Comparable> stringComparableMap)
-    {
-        return getPreconditionPredicate().test(stringComparableMap);
-    }
+//    public List<Condition> getPostConditions()
+//    {
+//        return postConditions;
+//    }
+
 }

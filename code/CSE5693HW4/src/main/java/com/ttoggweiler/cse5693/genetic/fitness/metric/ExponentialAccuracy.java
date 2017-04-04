@@ -20,7 +20,7 @@ public class ExponentialAccuracy extends FitnessMetric
     }
 
     @Override
-    double measureFitness(Performance performance)
+    public double measureFitness(Performance performance)
     {
         return Math.pow(performance.getAccuracy(),this.power);
     }

@@ -1,6 +1,7 @@
 package com.ttoggweiler.cse5693.genetic.fitness.metric;
 
 import com.ttoggweiler.cse5693.rule.Classifier;
+import com.ttoggweiler.cse5693.rule.Hypothesis;
 import com.ttoggweiler.cse5693.rule.Performance;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
@@ -13,12 +14,12 @@ import java.util.stream.Collectors;
  */
 public class Fitness
 {
-    private Classifier classifier;
+    private Hypothesis classifier;
     private Performance classifierPerformance;
     private FitnessMetric metric;
     private double value;
 
-    public Fitness(FitnessMetric metric, Classifier classifier, Collection<Map<String, Comparable>> exampleData)
+    public Fitness(FitnessMetric metric, Hypothesis classifier, Collection<Map<String, Comparable>> exampleData)
     {
         PreCheck.ifNull("Fitness metric cannot be null when creating Fitness measurement",metric);
         PreCheck.ifNull("Classifier cannot be null when creating Fitness measurement",metric);
@@ -35,12 +36,17 @@ public class Fitness
         return this.value;
     }
 
-    public Classifier getClassifier()
+    public Hypothesis getClassifier()
     {
         return this.classifier;
     }
 
-    public static Collection<Fitness> compute(FitnessMetric metric, Collection<Classifier> classifiers, Collection<Map<String,Comparable>> fitnessTestData, boolean parallel)
+    public FitnessMetric getMetric()
+    {
+        return this.metric;
+    }
+
+    public static Collection<Fitness> compute(FitnessMetric metric, Collection<Hypothesis> classifiers, Collection<Map<String,Comparable>> fitnessTestData, boolean parallel)
     {
         return parallel
                 ?classifiers.parallelStream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet())

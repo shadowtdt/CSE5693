@@ -2,6 +2,7 @@ package com.ttoggweiler.cse5693.genetic.fitness.selection;
 
 import com.ttoggweiler.cse5693.genetic.fitness.metric.Fitness;
 import com.ttoggweiler.cse5693.rule.Classifier;
+import com.ttoggweiler.cse5693.rule.Hypothesis;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class FitnessProportional extends FitnessSelector
     private Random rand = new Random();
 
     @Override
-    public Collection<Classifier> selectClassifiers(int count, Collection<Fitness> classifierFitness)
+    public Collection<Hypothesis> selectClassifiers(long count, Collection<Fitness> classifierFitness)
     {
         if(classifierFitness.size() <= count)
             return classifierFitness.stream().map(Fitness :: getClassifier).collect(Collectors.toSet());
@@ -36,7 +37,7 @@ public class FitnessProportional extends FitnessSelector
         }
 
         // Always select best fit classifier
-        Set<Classifier> selectedClassifiers = new HashSet<>(count);
+        Set<Hypothesis> selectedClassifiers = new HashSet<>();
         selectedClassifiers.add(mostFit.getClassifier());
         selectionProbabilities.remove(mostFit);
 

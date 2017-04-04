@@ -1,8 +1,11 @@
 package com.ttoggweiler.cse5693.genetic.population;
 
+import com.ttoggweiler.cse5693.rule.Hypothesis;
+
 /**
- * Created by ttoggweiler on 4/3/17.
+ * Base Mutator that will be extended by mutator implementations
  */
-public class Mutator
+public interface Mutator
 {
+    Hypothesis mutate(Hypothesis hypothesis);
 }

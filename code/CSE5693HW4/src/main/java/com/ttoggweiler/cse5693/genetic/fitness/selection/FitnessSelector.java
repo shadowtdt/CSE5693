@@ -1,7 +1,7 @@
 package com.ttoggweiler.cse5693.genetic.fitness.selection;
 
 import com.ttoggweiler.cse5693.genetic.fitness.metric.Fitness;
-import com.ttoggweiler.cse5693.rule.Classifier;
+import com.ttoggweiler.cse5693.rule.Hypothesis;
 
 import java.util.Collection;
 
@@ -11,5 +11,5 @@ import java.util.Collection;
  */
 public abstract class FitnessSelector
 {
-    public abstract Collection<Classifier> selectClassifiers(int count, Collection<Fitness> classifierFitness);
+    public abstract Collection<Hypothesis> selectClassifiers(long count, Collection<Fitness> classifierFitness);
 }
