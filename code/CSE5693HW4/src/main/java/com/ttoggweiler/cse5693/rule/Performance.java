@@ -16,20 +16,20 @@ public class Performance extends Identity
 {
     private Classifier classifier;
     private double commpletionTime;
-    private Set<Map<String,Comparable>> correctClassifications;
-    private Set<Map<String,Comparable>> incorrectClassifications;
+    private Set<Map<String,? extends Comparable>> correctClassifications;
+    private Set<Map<String,? extends Comparable>> incorrectClassifications;
 
-    public Performance(Classifier classifier, Collection<Map<String, Comparable>> exampleData)
+    public Performance(Classifier classifier, Collection<Map<String, ? extends Comparable>> exampleData)
     {
         this.classifier = classifier;
         measureClassificationPerformance(exampleData);
     }
 
-    private void measureClassificationPerformance(Collection<Map<String, Comparable>> exampleData)
+    private double measureClassificationPerformance(Collection<Map<String, ? extends Comparable>> exampleData)
     {
         correctClassifications = new HashSet<>();
         incorrectClassifications = new HashSet<>();
-        for (Map<String, Comparable> example : exampleData) {
+        for (Map<String, ? extends Comparable> example : exampleData) {
 //            Comparable classification = example.get(classifier.getTargetFeatures().getName());
 //            if(classification == null)
 //                throw new NullPointerException("Unable to measure performance of classifier. Example data is missing target feature: "+classifier.getName());
@@ -42,12 +42,13 @@ public class Performance extends Identity
                 incorrectClassifications.add(example);
         }
         commpletionTime = System.currentTimeMillis();
+        return getAccuracy();
     }
 
     public double getAccuracy()
     {
         if(PreCheck.isEmpty(correctClassifications))return 0;
-        else return correctClassifications.size() / (correctClassifications.size()+incorrectClassifications.size());
+        else return correctClassifications.size()/ (double)(correctClassifications.size()+incorrectClassifications.size());
     }
 
 }

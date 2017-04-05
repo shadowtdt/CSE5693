@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
  */
 public class FeatureLoader
 {
-    private List<Feature> argumentFeatures = null;
-    private List<Feature> targetFeatures = null;
+    private List<Feature<? extends Comparable>> argumentFeatures = null;
+    private List<Feature<? extends Comparable>> targetFeatures = null;
 
     public FeatureLoader(String pathString)throws IOException{
         this(getPathForString(pathString));
@@ -54,19 +54,19 @@ public class FeatureLoader
         PreCheck.ifEmpty(()-> new IllegalStateException("No target features were loaded from file: " +path.toString()),targetFeatures);
     }
 
-    public List<Feature> getArgumentFeatures()
+    public List<Feature<? extends Comparable>> getArgumentFeatures()
     {
         return this.argumentFeatures;
     }
 
-    public List<Feature> getTargetFeatures()
+    public List<Feature<? extends Comparable>> getTargetFeatures()
     {
         return this.targetFeatures;
     }
 
-    public List<Feature> getAllFeatures()
+    public List<Feature<? extends Comparable>> getAllFeatures()
     {
-        List<Feature> allFeaturesList = new ArrayList<>(argumentFeatures);
+        List<Feature<? extends Comparable>> allFeaturesList = new ArrayList<>(argumentFeatures);
         allFeaturesList.addAll(targetFeatures);
         return allFeaturesList;
     }
@@ -77,7 +77,7 @@ public class FeatureLoader
      * @param featureList Array of features
      * @return A List of features
      */
-    public static List<Feature> loadFeaturesFromArray(List<String> featureList)
+    public static List<Feature<? extends Comparable>> loadFeaturesFromArray(List<String> featureList)
     {
         PreCheck.ifEmpty(()-> new NullPointerException("Unable to load features from a null path"),featureList);
         return featureList.stream()
@@ -92,7 +92,7 @@ public class FeatureLoader
      * @return A set of features
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Feature> loadFeaturesFromPath(Path path) throws IOException
+    public static List<Feature<? extends Comparable>> loadFeaturesFromPath(Path path) throws IOException
     {
         return Files.lines(path)
                 .filter(PreCheck:: notEmpty)
@@ -106,7 +106,7 @@ public class FeatureLoader
      * @return A set of features parsed from the provided file
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Feature> loadFeaturesFromFile(String pathToFeatures) throws IOException
+    public static List<Feature<? extends Comparable>> loadFeaturesFromFile(String pathToFeatures) throws IOException
     {
         return loadFeaturesFromPath(getPathForString(pathToFeatures));
     }
@@ -135,7 +135,7 @@ public class FeatureLoader
         log.info("Loading file: {}", fileToLoad);
 
         try {
-            List<Feature> features = FeatureLoader.loadFeaturesFromFile(fileToLoad);
+            List<Feature<? extends Comparable>> features = FeatureLoader.loadFeaturesFromFile(fileToLoad);
             log.info("Loaded {} features: ", features.size());
             features.forEach(feature -> {
                 log.info("Feature Name: {} Values: {}",feature.getName(),feature.getValues());

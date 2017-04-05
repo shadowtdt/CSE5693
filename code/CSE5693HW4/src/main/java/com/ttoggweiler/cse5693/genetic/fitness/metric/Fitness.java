@@ -19,7 +19,7 @@ public class Fitness
     private FitnessMetric metric;
     private double value;
 
-    public Fitness(FitnessMetric metric, Hypothesis classifier, Collection<Map<String, Comparable>> exampleData)
+    public Fitness(FitnessMetric metric, Hypothesis classifier, Collection<Map<String, ? extends Comparable>> exampleData)
     {
         PreCheck.ifNull("Fitness metric cannot be null when creating Fitness measurement",metric);
         PreCheck.ifNull("Classifier cannot be null when creating Fitness measurement",metric);
@@ -46,10 +46,10 @@ public class Fitness
         return this.metric;
     }
 
-    public static Collection<Fitness> compute(FitnessMetric metric, Collection<Hypothesis> classifiers, Collection<Map<String,Comparable>> fitnessTestData, boolean parallel)
+    public static Collection<Fitness> compute(FitnessMetric metric, Collection<Hypothesis> classifiers, Collection<Map<String,? extends Comparable>> fitnessTestData, boolean parallel)
     {
         return parallel
-                ?classifiers.parallelStream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet())
+                ?classifiers.stream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet())
                 :classifiers.stream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet());
 
     }

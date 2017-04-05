@@ -9,8 +9,12 @@ import com.ttoggweiler.cse5693.genetic.fitness.selection.FitnessProportional;
 import com.ttoggweiler.cse5693.genetic.fitness.selection.FitnessSelector;
 import com.ttoggweiler.cse5693.genetic.population.BitFlipMutator;
 import com.ttoggweiler.cse5693.genetic.population.Mutator;
+import com.ttoggweiler.cse5693.genetic.population.OffspringFactory;
 import com.ttoggweiler.cse5693.rule.Classifier;
 import com.ttoggweiler.cse5693.rule.Hypothesis;
+import com.ttoggweiler.cse5693.util.RandomUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -46,6 +50,7 @@ public class GeneticSearch
     private double mutationRate = .001;
 
     private Fitness mostFitHypothesis;
+    private Logger log = LoggerFactory.getLogger(GeneticSearch.class);
 
     public GeneticSearch(int populationSize, double crossoverReplacementRate, double mutationRate)
     {
@@ -54,7 +59,7 @@ public class GeneticSearch
         this.mutationRate = mutationRate;
     }
 
-    public Hypothesis generateAndEvloveClassifier(List<Feature<? extends Comparable>>  features, List<Feature<? extends Comparable>>  targetFeatures, Collection<Map<String, Comparable>> data)
+    public Hypothesis generateAndEvolveClassifier(List<Feature<? extends Comparable>>  features, List<Feature<? extends Comparable>>  targetFeatures, Collection<Map<String, ? extends Comparable>> data)
     {
         // Init Starting generation
         Collection<Hypothesis> currentGeneration = generateRandomPopulation(populationSize,features,targetFeatures);
@@ -66,13 +71,19 @@ public class GeneticSearch
         long crossOverCount = Math.round(populationSize * crossoverReplacementRate);
         if(crossOverCount % 2 != 0)crossOverCount++;
         long keepCount = populationSize - crossOverCount;
-        while (mostFitHypothesis.getValue() < fitnessThreshold && generationNumber < generationLimit)
-        {
-            generationNumber++;
-            Collection<Hypothesis> nextGeneration = fitnessSelector.selectClassifiers(keepCount,currentGenerationFitness);
-            nextGeneration.addAll(fitnessSelector.selectClassifiers(crossOverCount,currentGenerationFitness).stream().map(mutator::mutate).collect(Collectors.toSet()));
 
+        while (mostFitHypothesis.getValue() < fitnessThreshold && generationNumber++ < generationLimit)
+        {
+            log.info("Generation: {} Fitness: {}",generationNumber,mostFitHypothesis.getValue());
+            Collection<Hypothesis> nextGeneration = fitnessSelector.selectClassifiers(keepCount,currentGenerationFitness);
+            nextGeneration.addAll(OffspringFactory.singlePointCross(fitnessSelector.selectClassifiers(crossOverCount,currentGenerationFitness)));
+            RandomUtil.selectRandomElements(nextGeneration,Math.round(nextGeneration.size()*mutationRate)).forEach(mutator::mutate);
+
+            currentGeneration = nextGeneration;
+            currentGenerationFitness = Fitness.compute(fitnessMetric,currentGeneration,data,true);
+            mostFitHypothesis = currentGenerationFitness.stream().max(Comparator.comparingDouble(Fitness::getValue)).get();
         }
+
         return mostFitHypothesis.getClassifier();
     }
 
@@ -82,7 +93,7 @@ public class GeneticSearch
 
         while(generationZero.size() != populationSize)
         {
-            generationZero.add(new Hypothesis(2,features,targetFeatures));
+            generationZero.add(new Hypothesis(RandomUtil.rand.nextInt(4)+1,features,targetFeatures));
         }
         return generationZero;
     }

@@ -180,7 +180,7 @@ public class Feature<T extends Comparable>
         return valueMap;
     }
 
-    public static Feature parseFeature(String featureString)
+    public static Feature<? extends Comparable> parseFeature(String featureString)
     {
         String[] splitFeature = featureString.split(" ");
         if (splitFeature.length < 2)

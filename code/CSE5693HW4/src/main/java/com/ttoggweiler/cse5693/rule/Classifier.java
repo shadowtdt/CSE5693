@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Base class that all classifiers will extend, such as Rule and Hyothesis
+ * Base class that all classifiers will extend, such as Rule and Hypothesis
  * Used to classify example data
  */
 public abstract class Classifier extends Identity implements Predicate<Map<String,? extends Comparable>>

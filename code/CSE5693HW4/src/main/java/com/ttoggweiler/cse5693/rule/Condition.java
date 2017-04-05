@@ -1,11 +1,13 @@
 package com.ttoggweiler.cse5693.rule;
 
 import com.ttoggweiler.cse5693.feature.Feature;
+import com.ttoggweiler.cse5693.util.PreCheck;
 import com.ttoggweiler.cse5693.util.RandomUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 
 /**
@@ -15,36 +17,59 @@ public class Condition implements Predicate<Map<String,? extends Comparable>>
 {
     //todo string value of condition
     private Feature conditionFeature;
-    private List<Predicate<Map<String,? extends Comparable>>> featurePredicates = new ArrayList<>();
+    //private List<Predicate<Map<String,? extends Comparable>>> featurePredicates = new ArrayList<>();
+    private SortedMap<Comparable,Boolean> featureConditions;
+
 
     public Condition(Feature<? extends Comparable> feature)
     {
-        this.setConditionFeature(feature);
-        // If feature has no known values, assume continuous feature
+        this.setFeature(feature);
+        this.featureConditions = new TreeMap<>();
+
         if(feature.isContinuous())
         {
-            Comparable randValue = RandomUtil.selectRandomElement(feature.getValues());
-            getConditionPredicates().add((map)-> map.get(feature.getName()).compareTo(RandomUtil.selectRandomElement(feature.getValues())) >= 0);
+            Comparable randValue = PreCheck.notEmpty(feature.getValues())
+                    ? RandomUtil.selectRandomElement(feature.getValues())
+                    : RandomUtil.rand.nextFloat()*100;
+            featureConditions.put(randValue,Boolean.TRUE);
         }else{
-            for (Predicate valuePredicate : feature.getValuePredicates())
-                featurePredicates.add(RandomUtil.probability(.5) ? valuePredicate : valuePredicate.negate());
+            for (Comparable featureValue : feature.getValues())
+                featureConditions.put(featureValue, RandomUtil.probability(.5)
+                        ? Boolean.TRUE : Boolean.FALSE);
         }
+    }
+
+    public Condition(Feature<? extends Comparable> feature,SortedMap<Comparable,Boolean> valueConditions)
+    {
+        this.setFeature(feature);
+        this.setFeatureConditions(valueConditions);
     }
 
     @Override
     public boolean test(Map<String,? extends Comparable> stringComparableMap)
     {
-        return getPredicate().test(stringComparableMap);
+        Comparable exampleValue = stringComparableMap.get(conditionFeature.getName());
+        return conditionFeature.isContinuous()
+                ? featureConditions.firstKey().compareTo(exampleValue) >= 0
+                : featureConditions.get(exampleValue);
     }
 
-    public List< Predicate< Map<String,? extends Comparable>>> getConditionPredicates()
+    public boolean isValidCondition(boolean isTargetFeaure)
     {
-        return this.featurePredicates;
+        return isTargetFeaure
+                ? Collections.frequency(featureConditions.values(),Boolean.TRUE) == 1 // Target conditions can have only one prediction
+                : Collections.frequency(featureConditions.values(),Boolean.TRUE) > 0; // Feature conditions must have at lease one allowed value
+
     }
 
-    public void setConditionPredicates(List< Predicate< Map<String,? extends Comparable>>> predicateList)
+    public SortedMap<Comparable,Boolean> getFeatureConditions()
     {
-        this.featurePredicates = predicateList;
+        return this.featureConditions;
+    }
+
+    public void setFeatureConditions(SortedMap<Comparable,Boolean> featureConditions)
+    {
+        this.featureConditions = featureConditions;
     }
 
     public Feature getConditionFeature()
@@ -52,18 +77,8 @@ public class Condition implements Predicate<Map<String,? extends Comparable>>
         return conditionFeature;
     }
 
-    public void setConditionFeature(Feature conditionFeature)
+    public void setFeature(Feature conditionFeature)
     {
         this.conditionFeature = conditionFeature;
-    }
-
-    public Predicate<Map<String,? extends Comparable>> getPredicate()
-    {
-        Predicate<Map<String,? extends Comparable>> combinedPredicate = null;
-        for (Predicate<Map<String,? extends Comparable>> featurePredicate : getConditionPredicates()) {
-            if(combinedPredicate == null) combinedPredicate = featurePredicate;
-            else combinedPredicate.and(featurePredicate);
-        }
-        return combinedPredicate;
     }
 }

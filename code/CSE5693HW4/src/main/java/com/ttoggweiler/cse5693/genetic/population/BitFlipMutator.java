@@ -3,9 +3,11 @@ package com.ttoggweiler.cse5693.genetic.population;
 import com.ttoggweiler.cse5693.rule.Condition;
 import com.ttoggweiler.cse5693.rule.Hypothesis;
 import com.ttoggweiler.cse5693.rule.Rule;
+import com.ttoggweiler.cse5693.util.RandomUtil;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedMap;
 import java.util.function.Predicate;
 
 /**
@@ -13,10 +15,14 @@ import java.util.function.Predicate;
  */
 public class BitFlipMutator implements Mutator
 {
-    private static final Random rand = new Random();
     @Override
     public Hypothesis mutate(Hypothesis hypothesis)
     {
+        Rule randomRule = RandomUtil.selectRandomElement(hypothesis.getRuleList());
+        Condition randomCondition = RandomUtil.selectRandomElement(randomRule.getPreConditions());
+        SortedMap<Comparable,Boolean> values = randomCondition.getFeatureConditions();
+        Comparable valueKey = RandomUtil.selectRandomElement(values.keySet());
+        values.replace(valueKey,values.get(valueKey));
         return hypothesis;
 //
 //        for (Rule rule : hypothesis.getRuleList()) {

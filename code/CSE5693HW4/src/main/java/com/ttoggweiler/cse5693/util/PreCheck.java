@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  */
 public class PreCheck
 {
+    //todo @objects. nonnull...
     /* Object */
 
     /**

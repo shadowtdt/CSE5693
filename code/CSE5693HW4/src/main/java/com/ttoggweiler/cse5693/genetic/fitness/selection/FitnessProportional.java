@@ -48,8 +48,7 @@ public class FitnessProportional extends FitnessSelector
                 if(fitnessEntry.getValue() > rand.nextDouble())
                 {
                     selectedClassifiers.add(fitnessEntry.getKey().getClassifier());
-                    selectionProbabilities.remove(fitnessEntry.getKey());
-                    if(selectedClassifiers.size() != count)
+                    if(selectedClassifiers.size() == count)
                         return selectedClassifiers;
                 }
             }

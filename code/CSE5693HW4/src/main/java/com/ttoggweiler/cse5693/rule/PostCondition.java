@@ -18,7 +18,7 @@
 //
 //    public PostCondition(Feature feature)
 //    {
-//        this.setConditionFeature(feature);
+//        this.setFeature(feature);
 //        // If feature has no known values, assume continuous feature
 //        if(PreCheck.isEmpty(feature.getValues()))
 //        {

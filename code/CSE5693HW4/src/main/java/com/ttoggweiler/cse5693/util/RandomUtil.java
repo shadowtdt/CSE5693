@@ -21,16 +21,18 @@ public class RandomUtil
     public static <T> T selectRandomElement(Collection<T> collection)
     {
         PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random element from null or empty collection"),collection);
-        return collection.stream().unordered().skip(rand.nextInt(collection.size())).findFirst().get();
+        int randomIndex = rand.nextInt(collection.size());
+        for (T t : collection) if(randomIndex-- <= 0) return t;
+        throw new AssertionError();
     }
 
-    public static <T> Collection<T> selectRandomElements(Collection<T> collection, int numberToSelect)
+    public static <T> Collection<T> selectRandomElements(Collection<T> collection, long numberToSelect)
     {
         PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random elements from null or empty collection"),collection);
         if(numberToSelect <= 0)return Collections.emptySet();
         else if(numberToSelect >= collection.size())return collection;
 
-        Collection<T> selected = new HashSet<>(numberToSelect);
+        Collection<T> selected = new HashSet<>((int)numberToSelect);
 
         while(selected.size() != numberToSelect)
             selected.add(selectRandomElement(collection));
@@ -47,5 +49,6 @@ public class RandomUtil
         int numberToSelect = (int)Math.round(collection.size() * percent);
         return selectRandomElements(collection,numberToSelect);
     }
+
 
 }

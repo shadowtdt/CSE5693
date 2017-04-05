@@ -3,7 +3,7 @@ package com.ttoggweiler.cse5693;
 import com.codahale.metrics.MetricRegistry;
 import com.ttoggweiler.cse5693.feature.DataLoader;
 import com.ttoggweiler.cse5693.feature.FeatureLoader;
-import com.ttoggweiler.cse5693.feature.Parser;
+import com.ttoggweiler.cse5693.genetic.GeneticSearch;
 import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,9 +129,9 @@ public class GeneticRunner
         }
 
         if(PreCheck.isEmpty(testFilePath))testFilePath = dataFilePath;
-        log.info("=== CSE5693-HW3 Artificial-Neural-Network Runner ====");
+        log.info("=== CSE5693-HW4 Genetic-Algorithm Runner ====");
         log.info("Author: Troy Toggweiler");
-        log.info("Date: 3/15/2017 ");
+        log.info("Date: 4/4/2017 ");
 
 
         log.info("\n\n===  FILES  ===");
@@ -141,11 +141,14 @@ public class GeneticRunner
 
         FeatureLoader featLoader = new FeatureLoader(featureFilePath);
 
-        List<Map<String, Comparable>> trainingDatas = DataLoader.loadDataFromFile(dataFilePath, featLoader.getAllFeatures());
-        List<Map<String, Comparable>> validationDatas = DataLoader.loadDataFromFile(testFilePath, featLoader.getAllFeatures());
+        List<Map<String, ? extends Comparable>> trainingDatas = DataLoader.loadDataFromFile(dataFilePath, featLoader.getAllFeatures());
+        List<Map<String, ? extends Comparable>> validationDatas = DataLoader.loadDataFromFile(testFilePath, featLoader.getAllFeatures());
 
-        List<Map<String, Comparable>> allData = new ArrayList<>(trainingDatas);
+        List<Map<String, ? extends Comparable>> allData = new ArrayList<>(trainingDatas);
         allData.addAll(validationDatas);
+
+        GeneticSearch gs = new GeneticSearch(100,0.5,0.1);
+        gs.generateAndEvolveClassifier(featLoader.getArgumentFeatures(),featLoader.getTargetFeatures(),trainingDatas);
 
     }
 }

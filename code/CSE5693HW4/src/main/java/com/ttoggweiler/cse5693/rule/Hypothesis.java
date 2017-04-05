@@ -21,7 +21,7 @@ public class Hypothesis extends Classifier
         this.setFeatures(features);
         this.setTargetFeatures(targetFeatures);
         ruleList = new ArrayList<>(ruleCount);
-        for (int i = 0; i < ruleCount; i++) {
+        for (int i = 0; i <= ruleCount; i++) {
             ruleList.add(new Rule(features,targetFeatures));
         }
     }

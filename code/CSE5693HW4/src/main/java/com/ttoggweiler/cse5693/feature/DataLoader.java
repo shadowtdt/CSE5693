@@ -26,14 +26,14 @@ public class DataLoader
      * @return A set of features
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Map<String, Comparable>> loadDataFromPath(Path path, List<Feature> featureSet) throws IOException
+    public static List<Map<String, ? extends Comparable>> loadDataFromPath(Path path, List<Feature<? extends Comparable>> featureSet) throws IOException
     {
         if (path == null) throw new NullPointerException("Unable to load features from a null path");
         List<String> lines = Files.lines(path)
                 .filter(PreCheck::notEmpty)
                 .collect(Collectors.toList());
 
-        List<Map<String, Comparable>> data = new ArrayList<>();
+        List<Map<String, ? extends Comparable>> data = new ArrayList<>();
         // For each example
         for (String line : lines) {
             String[] splitLine = line.trim().split("\\s+");
@@ -56,7 +56,7 @@ public class DataLoader
      * @return A set of features parsed from the provided file
      * @throws IOException when files does not exist or is not readable
      */
-    public static List<Map<String, Comparable>> loadDataFromFile(String pathToData, List<Feature> featureSet) throws IOException
+    public static List<Map<String, ? extends Comparable>> loadDataFromFile(String pathToData, List<Feature<? extends Comparable>> featureSet) throws IOException
     {
         if (PreCheck.isEmpty(pathToData)) throw new NullPointerException("Unable to load features from a null file path string");
         URL resource = DataLoader.class.getResource(pathToData);
@@ -75,12 +75,12 @@ public class DataLoader
         log.info("Loading file: {}", dataFilePath);
 
         try {
-            List<Feature> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
-            List<Map<String, Comparable>> datas = loadDataFromFile(dataFilePath,features);
+            List<Feature<? extends Comparable>> features = FeatureLoader.loadFeaturesFromFile(featureFilePath);
+            List<Map<String, ? extends Comparable>> datas = loadDataFromFile(dataFilePath,features);
 
             log.debug("Loaded {} instances: ", datas.size());
             int i =0;
-            for(Map<String,Comparable> data : datas ){
+            for(Map<String,? extends Comparable> data : datas ){
                 log.info("#{} Values: {}",i++, data.toString());
             }
         } catch (IOException e) {
