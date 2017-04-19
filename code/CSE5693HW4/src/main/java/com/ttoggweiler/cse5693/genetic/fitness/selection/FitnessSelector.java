@@ -9,7 +9,7 @@ import java.util.Collection;
  * Base class that all Fitness selectors will extend, Rank, Tournament, Proportional
  * Used by {@link com.ttoggweiler.cse5693.genetic.GeneticSearch} to select hypotheses for the next generation
  */
-public abstract class FitnessSelector
+public interface FitnessSelector
 {
     public abstract Collection<Hypothesis> selectClassifiers(long count, Collection<Fitness> classifierFitness);
 }

@@ -1,6 +1,5 @@
 package com.ttoggweiler.cse5693.genetic.fitness.metric;
 
-import com.ttoggweiler.cse5693.rule.Classifier;
 import com.ttoggweiler.cse5693.rule.Hypothesis;
 import com.ttoggweiler.cse5693.rule.Performance;
 import com.ttoggweiler.cse5693.util.PreCheck;
@@ -46,11 +45,38 @@ public class Fitness
         return this.metric;
     }
 
+    public Performance getPerformance()
+    {
+        return classifierPerformance;
+    }
+
     public static Collection<Fitness> compute(FitnessMetric metric, Collection<Hypothesis> classifiers, Collection<Map<String,? extends Comparable>> fitnessTestData, boolean parallel)
     {
         return parallel
                 ?classifiers.stream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet())
                 :classifiers.stream().map(aClassifier -> new Fitness(metric,aClassifier,fitnessTestData)).collect(Collectors.toSet());
 
+    }
+
+    public String getFitnessString(boolean includePerformance, boolean includeClassifier)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Fitness: ");
+        sb.append(getValue());
+        if(includePerformance) {
+            sb.append(" ");
+            sb.append(classifierPerformance.getPerformanceString(true, true, false));
+        }
+        if(includeClassifier) {
+            sb.append(" ");
+            sb.append(classifier.getClassifierString(false));
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return getFitnessString(true,false);
     }
 }

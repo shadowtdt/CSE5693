@@ -24,6 +24,8 @@ public abstract class Classifier extends Identity implements Predicate<Map<Strin
 
     public abstract int getNumberOfBits();
 
+    public abstract String getClassifierString(boolean includeName);
+
     @Override
     public boolean test(Map<String,? extends Comparable> stringComparableMap)
     {
@@ -33,8 +35,7 @@ public abstract class Classifier extends Identity implements Predicate<Map<Strin
     public boolean isCorrectClassification(Map<String, ? extends Comparable> example)
     {
         Map<String,? extends Comparable> prediction = classifyExample(example);
-        if(PreCheck.isEmpty(prediction) || prediction.size() != targetFeatures.size())
-            return false;
+        if(PreCheck.isEmpty(prediction) || prediction.size() != targetFeatures.size()) return false;
 
         for (String targetFeature : targetFeatures.stream().map(Feature::getName).collect(Collectors.toSet()))
             if(!prediction.get(targetFeature).equals(example.get(targetFeature)))return false;
@@ -59,5 +60,11 @@ public abstract class Classifier extends Identity implements Predicate<Map<Strin
     public List<Feature<? extends Comparable>> getFeatures()
     {
         return this.features;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getClassifierString(true);
     }
 }

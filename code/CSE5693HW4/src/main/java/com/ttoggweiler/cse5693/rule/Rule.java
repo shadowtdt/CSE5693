@@ -1,7 +1,6 @@
 package com.ttoggweiler.cse5693.rule;
 
 import com.ttoggweiler.cse5693.feature.Feature;
-import com.ttoggweiler.cse5693.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,31 +17,22 @@ import java.util.stream.Collectors;
 public class Rule extends Classifier
 {
 
-//    private Rule mom;
-//    private Rule dad;
     // todo map string -> condition
     private List<Condition> preConditions;
     private List<Condition> postConditions;
-    //private Map<String,Comparable> prediction = new HashMap<>();
-
-//    public Rule(List<PreCondition> preConditionList, List<PostCondition> postConditionList, Rule mom, Rule dad)
-//    {
-//        preConditionList.forEach(this :: addPrecondition);
-//        postConditionList.forEach(this::addPostCondition);
-//        this.mom = mom;
-//        this.dad = dad;
-//    }
 
     public Rule(Collection<Feature<? extends Comparable>> featureList, Collection<Feature<? extends Comparable>> targetFeatureList)
     {
         this.setFeatures(featureList.stream().collect(Collectors.toList()));
         this.setTargetFeatures(targetFeatureList.stream().collect(Collectors.toList()));
-        this.setPreConditions(featureList.stream().map(Condition::new).collect(Collectors.toList()));
-        this.setPostConditions(targetFeatureList.stream().map(Condition::new).collect(Collectors.toList()));
+        this.setPreConditions(featureList.stream().map(f -> new Condition(f,false)).collect(Collectors.toList()));
+        this.setPostConditions(targetFeatureList.stream().map(tf -> new Condition(tf,true)).collect(Collectors.toList()));
     }
 
-    public Rule(List<Condition> preConditions, List<Condition> postConditions)
+    public Rule(Collection<Feature<? extends Comparable>> featureList, Collection<Feature<? extends Comparable>> targetFeatureList, List<Condition> preConditions, List<Condition> postConditions)
     {
+        this.setFeatures(featureList.stream().collect(Collectors.toList()));
+        this.setTargetFeatures(targetFeatureList.stream().collect(Collectors.toList()));
         this.setPreConditions(preConditions);
         this.setPostConditions(postConditions);
     }
@@ -54,7 +44,7 @@ public class Rule extends Classifier
         for (Condition postCondition : postConditions) {
             postCondition.getFeatureConditions().entrySet().stream()
                     .filter(Map.Entry :: getValue).findAny().ifPresent(entry ->
-                    prediction.put(postCondition.getConditionFeature().getName(),entry.getKey()));
+                    prediction.put(postCondition.getFeature().getName(),entry.getKey()));
         }
         return test(example) ? prediction : Collections.emptyMap();
     }
@@ -74,17 +64,30 @@ public class Rule extends Classifier
             if(combinedPredicate == null) combinedPredicate = prePredicate;
             else combinedPredicate.and(prePredicate);
         }
+
         return combinedPredicate;
+    }
+
+    @Override
+    public String getClassifierString(boolean includeName)
+    {
+        return getPreConditions().stream()
+                .map(c -> c.getConditionString(includeName))
+                .collect(Collectors.joining(" AND ","IF "," THEN "))
+
+                + getPostConditions().stream()
+                .map(c -> c.getConditionString(includeName))
+                .collect(Collectors.joining(" AND "));
     }
 
     public void setPreConditions(List<Condition> preConditions)
     {
-        this.preConditions = preConditions;
+        this.preConditions = new ArrayList<>(preConditions);
     }
 
     public void setPostConditions(List<Condition> postConditions)
     {
-        this.postConditions = postConditions;
+        this.postConditions = new ArrayList<>(postConditions);
     }
 
     public List<Condition> getPreConditions()

@@ -1,16 +1,16 @@
 package com.ttoggweiler.cse5693.genetic;
 
-import com.sun.org.apache.regexp.internal.RE;
 import com.ttoggweiler.cse5693.feature.Feature;
 import com.ttoggweiler.cse5693.genetic.fitness.metric.ExponentialAccuracy;
 import com.ttoggweiler.cse5693.genetic.fitness.metric.Fitness;
 import com.ttoggweiler.cse5693.genetic.fitness.metric.FitnessMetric;
 import com.ttoggweiler.cse5693.genetic.fitness.selection.FitnessProportional;
 import com.ttoggweiler.cse5693.genetic.fitness.selection.FitnessSelector;
+import com.ttoggweiler.cse5693.genetic.fitness.selection.FitnessTournament;
+import com.ttoggweiler.cse5693.genetic.fitness.selection.RankProportional;
 import com.ttoggweiler.cse5693.genetic.population.BitFlipMutator;
 import com.ttoggweiler.cse5693.genetic.population.Mutator;
 import com.ttoggweiler.cse5693.genetic.population.OffspringFactory;
-import com.ttoggweiler.cse5693.rule.Classifier;
 import com.ttoggweiler.cse5693.rule.Hypothesis;
 import com.ttoggweiler.cse5693.util.RandomUtil;
 import org.slf4j.Logger;
@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Genetic Algorithm that returns the most successful hypotheses after multiple generations
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 public class GeneticSearch
 {
     private FitnessMetric fitnessMetric = new ExponentialAccuracy(2);
-    private FitnessSelector fitnessSelector = new FitnessProportional();
+    private FitnessSelector fitnessSelector = new RankProportional();
     private Mutator mutator = new BitFlipMutator();
 
     private int generationLimit = 1000;
@@ -61,6 +60,9 @@ public class GeneticSearch
 
     public Hypothesis generateAndEvolveClassifier(List<Feature<? extends Comparable>>  features, List<Feature<? extends Comparable>>  targetFeatures, Collection<Map<String, ? extends Comparable>> data)
     {
+        log.info("\n\nSelection: {}, MutationRate: {}, ReplacementRate: {} MaxGeneration {}, FitnessThreshold: {}",
+                fitnessSelector.getClass().getSimpleName(),getMutationRate(),getCrossoverReplacementRate(),getGenerationLimit(),getFitnessThreshold());
+        // Init Starting generation
         // Init Starting generation
         Collection<Hypothesis> currentGeneration = generateRandomPopulation(populationSize,features,targetFeatures);
         Collection<Fitness> currentGenerationFitness = Fitness.compute(fitnessMetric,currentGeneration,data,true);
@@ -70,18 +72,46 @@ public class GeneticSearch
         int generationNumber = 0;
         long crossOverCount = Math.round(populationSize * crossoverReplacementRate);
         if(crossOverCount % 2 != 0)crossOverCount++;
+        if(crossOverCount < 2)crossOverCount = 2;
         long keepCount = populationSize - crossOverCount;
+        long mutationCount = Math.round(populationSize*mutationRate);
+        if(mutationCount < 1) mutationCount = 1;
 
-        while (mostFitHypothesis.getValue() < fitnessThreshold && generationNumber++ < generationLimit)
+
+
+        while (mostFitHypothesis.getValue() < fitnessThreshold && generationNumber < generationLimit)
         {
-            log.info("Generation: {} Fitness: {}",generationNumber,mostFitHypothesis.getValue());
-            Collection<Hypothesis> nextGeneration = fitnessSelector.selectClassifiers(keepCount,currentGenerationFitness);
-            nextGeneration.addAll(OffspringFactory.singlePointCross(fitnessSelector.selectClassifiers(crossOverCount,currentGenerationFitness)));
-            RandomUtil.selectRandomElements(nextGeneration,Math.round(nextGeneration.size()*mutationRate)).forEach(mutator::mutate);
+            if(generationNumber++%100 == 0) {
+                log.info("Gen:{} Fit:{} Best{}%",generationNumber,mostFitHypothesis.getValue(),mostFitHypothesis.getPerformance().getAccuracy()*100);
+                log.info("Fitness    {}", currentGenerationFitness.stream().mapToDouble(Fitness::getValue).summaryStatistics());
+                log.info("Accuracy   {}", currentGenerationFitness.stream().mapToDouble(f -> f.getPerformance().getAccuracy()).summaryStatistics());
+                log.info("Rule Count {}", currentGeneration.stream().mapToDouble(g -> g.getRuleList().size()).summaryStatistics());
+                //currentGenerationFitness.parallelStream().forEach(h -> log.debug("\n{}",h.getFitnessString(true,false)));}
+            }
 
+            Collection<Hypothesis> nextGeneration = new HashSet<>(populationSize);
+            nextGeneration.add(mostFitHypothesis.getClassifier());
+
+            //Remove the really bad Hypotheses
+            //currentGenerationFitness.removeIf(f -> f.getValue() < 0.001);
+            //int removed = populationSize-currentGenerationFitness.size();
+            //log.warn("Removed {} ({})% poor hypotheses",removed, (removed/(double)populationSize)*100);
+
+            // Select and populate the next generation
+            nextGeneration.addAll(fitnessSelector.selectClassifiers(keepCount,currentGenerationFitness));
+            nextGeneration.addAll(OffspringFactory.randomPointConditionCross(fitnessSelector.selectClassifiers(crossOverCount,currentGenerationFitness)));
+            RandomUtil.selectRandomElements(nextGeneration,mutationCount).parallelStream().forEach(mutator::mutate);
+
+//            // Fill population to capacity after purging poor
+//            int populationDeficit = populationSize - nextGeneration.size();
+//            if(populationDeficit > 0)
+//                nextGeneration.addAll(generateRandomPopulation(populationDeficit,features,targetFeatures));
+
+            // Measure the new generation
             currentGeneration = nextGeneration;
             currentGenerationFitness = Fitness.compute(fitnessMetric,currentGeneration,data,true);
-            mostFitHypothesis = currentGenerationFitness.stream().max(Comparator.comparingDouble(Fitness::getValue)).get();
+            Fitness generationsBest = currentGenerationFitness.stream().max(Comparator.comparingDouble(Fitness::getValue)).get();
+            if(generationsBest.getValue() > mostFitHypothesis.getValue())mostFitHypothesis = generationsBest;
         }
 
         return mostFitHypothesis.getClassifier();
@@ -93,10 +123,11 @@ public class GeneticSearch
 
         while(generationZero.size() != populationSize)
         {
-            generationZero.add(new Hypothesis(RandomUtil.rand.nextInt(4)+1,features,targetFeatures));
+            generationZero.add(new Hypothesis(2,features,targetFeatures));
         }
         return generationZero;
     }
+
 
     /* Getter n Setters */
     public FitnessMetric getFitnessMetric()
