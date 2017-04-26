@@ -13,11 +13,17 @@ import java.util.stream.Collectors;
 
 /**
  * Static util methods that check arguments validity
- * // TODO: ttoggweiler 2/2/17 tests
+ * TODO: ttoggweiler 2/2/17 tests
+ * TODO: ttoggweiler 4/24/17 non-null map,
+ * TODO: ttoggweiler 4/24/17  map not null, key exists, and value not null bool // PreCheck.notEmpty(targetdist) && PreCheck.notNull(targetdist.get(feature))
+ * // TODO: ttoggweiler 4/24/17 map: get or set.. getElseSet(K Key, V val )
+ *
  */
 public class PreCheck
 {
-    //todo @objects. nonnull...
+    //todo @objects. nonnull...\
+    // //
+    //todo
     /* Object */
 
     /**
@@ -146,8 +152,27 @@ public class PreCheck
      */
     public static <T> boolean isEmpty(T[] array)
     {
-        if (array == null || array.length == 0) return true;
-        return false;
+        return (array == null || array.length == 0);
+    }
+
+    public static boolean isEmpty(int[] array)
+    {
+        return (array == null || array.length == 0);
+    }
+
+    public static boolean isEmpty(long[] array)
+    {
+        return (array == null || array.length == 0);
+    }
+
+    public static boolean isEmpty(double[] array)
+    {
+        return (array == null || array.length == 0);
+    }
+
+    public static boolean isEmpty(float[] array)
+    {
+        return (array == null || array.length == 0);
     }
 
     /**
@@ -156,6 +181,26 @@ public class PreCheck
      * @return true if  != null && !Empty
      */
     public static <T> boolean notEmpty(T[] array)
+    {
+        return !isEmpty(array);
+    }
+
+    public static boolean notEmpty(int[] array)
+    {
+        return !isEmpty(array);
+    }
+
+    public static boolean notEmpty(long[] array)
+    {
+        return !isEmpty(array);
+    }
+
+    public static boolean notEmpty(float[] array)
+    {
+        return !isEmpty(array);
+    }
+
+    public static boolean notEmpty(double[] array)
     {
         return !isEmpty(array);
     }

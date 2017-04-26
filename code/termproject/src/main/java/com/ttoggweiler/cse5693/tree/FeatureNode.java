@@ -28,9 +28,9 @@ public class FeatureNode extends Node<Feature>
     private Set<Feature> remainingFeatures;
     private Set<Comparable> edgeValues = new HashSet<>();
 
-    public FeatureNode(Feature feature, Collection<Feature> remainingFeatures)
+    public FeatureNode(FeatureNode parent, Feature feature, Collection<Feature> remainingFeatures)
     {
-        super(feature.getName(),null,feature);
+        super(feature.name(),parent,feature);
         this.remainingFeatures = new HashSet<>(remainingFeatures);
     }
 
@@ -95,7 +95,7 @@ public class FeatureNode extends Node<Feature>
     {
         if(distanceFromRoot() >= ((FeatureNode)getRootNode()).getPredictionDepth())
             return this;
-        if(hasChildren() && input.containsKey(getData().getName())) // if there are children and input contains this feature
+        if(hasChildren() && input.containsKey(getData().name())) // if there are children and input contains this feature
         {
             Optional<FeatureNode> oNextNode = edges.entrySet().stream()
                     .filter(e -> e.getKey().test(input)) // Use predicates to test the value for matching children
@@ -106,6 +106,11 @@ public class FeatureNode extends Node<Feature>
             if(oNextNode.isPresent())return oNextNode.get().getClassificationLeaf(input);
         }
         return this;
+    }
+
+    public FeatureNode getClassificationLeafParent(Map<String,Comparable> input)
+    {
+        return (FeatureNode) (getClassificationLeaf(input)).getParentNode().get();
     }
 
     public Comparable getMostCommonValue()
@@ -126,7 +131,7 @@ public class FeatureNode extends Node<Feature>
         if(getParentNode().isPresent())
         {
             FeatureNode parent = getParentNode().map(n -> ((FeatureNode) n)).get();
-            return  parent.getPathPredicate().and(getParentEdgePredicate());
+            return  parent.getPathPredicate().and(PreCheck.defaultTo(getParentEdgePredicate(), (s) -> true));
         }
         return (x) -> true;
     }
@@ -135,7 +140,7 @@ public class FeatureNode extends Node<Feature>
     {
         String treeStr = "";
         //for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
-        treeStr += getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("Root");
+        treeStr += getParentNode().map(n -> n.name() + getParentEdgeName()).orElse("Root");
         if(PreCheck.notEmpty(edges))
         {
             for (Map.Entry<Predicate<Map<String, Comparable>>, FeatureNode> edge : edges.entrySet()) {
@@ -154,7 +159,7 @@ public class FeatureNode extends Node<Feature>
         String treeStr = getParentNode().map(n -> ((FeatureNode) n)).map(n -> n.toPathTree()).orElse("");
         treeStr += "\n";
         for (int i = 1; i < distanceFromRoot(); i++) treeStr += "|\t";
-        treeStr += getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("Root");
+        treeStr += getParentNode().map(n -> n.name() + getParentEdgeName()).orElse("Root");
         if(!hasChildren()) treeStr += " : " + targetFeatureDistribution;
         return treeStr;
     }
@@ -169,7 +174,7 @@ public class FeatureNode extends Node<Feature>
 
     public String parentEdgeString(Boolean includeDist)
     {
-        String edgeString = getParentNode().map(n -> n.getName() + getParentEdgeName()).orElse("");
+        String edgeString = getParentNode().map(n -> n.name() + getParentEdgeName()).orElse("");
         if(includeDist) edgeString += " : "+getTargetDistributions();
         return edgeString;
     }

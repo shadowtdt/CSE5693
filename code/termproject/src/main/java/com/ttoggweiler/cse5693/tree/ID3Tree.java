@@ -1,19 +1,21 @@
 package com.ttoggweiler.cse5693.tree;
 
-import com.ttoggweiler.cse5693.feature.DataSet;
+import com.ttoggweiler.cse5693.data.DataSet;
 import com.ttoggweiler.cse5693.feature.Feature;
-import com.ttoggweiler.cse5693.feature.Parser;
+import com.ttoggweiler.cse5693.util.MapUtil;
+import com.ttoggweiler.cse5693.util.RandomUtil;
+import com.ttoggweiler.cse5693.util.ValueParser;
 import com.ttoggweiler.cse5693.predict.Classifier;
 import com.ttoggweiler.cse5693.util.PreCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -21,25 +23,35 @@ import java.util.stream.Stream;
  */
 public class ID3Tree extends Classifier
 {
-    private static Logger log = LoggerFactory.getLogger(ID3Tree.class);
+    public static final int MIN_LEAF_DATA_SIZE = 2;
     private static boolean useStreams = true;
-    private static boolean useParallelStreams = false;
-    private static int parallelThreshold = 100;
-    private static int buildTreeDepthLimit = 3;
+    private static boolean useParallelStreams = true;
+    private static int parallelThreshold = 10000;
 
+    public static final int DEFAULT_DEPTH_LIMIT = Integer.MAX_VALUE;
+    private static int buildTreeDepthLimit = DEFAULT_DEPTH_LIMIT;
+
+    private static Logger log = LoggerFactory.getLogger(ID3Tree.class);
     private FeatureNode rootNode;
+
     private Feature target;
 
     // in the middle of refactoring....plan it out what is parent resposible for and what is the child respibiel for in terms of edges, creating attribures...
-    public ID3Tree(Feature target, DataSet trainData)
+//    public ID3Tree(Feature target, DataSet trainData)
+//    {
+//        this.target = target;
+//        this.setFeatures(trainData.getFeatures());
+//        this.setTargetFeatures(trainData.getTargets());
+//
+//        FeatureNode initNode = new FeatureNode(null,target,trainData.getFeatures());
+//        initNode.setTargetDistributions(trainData.countValuesForFeature(target,true));
+//        rootNode = buildSubTree(initNode, target, trainData);
+//    }
+
+    public ID3Tree(Feature target,Integer depth)
     {
         this.target = target;
-        this.setFeatures(trainData.getFeatures());
-        this.setTargetFeatures(trainData.getTargets());
-
-        FeatureNode initNode = new FeatureNode(target, trainData.getFeatures());
-        initNode.setTargetDistributions(trainData.getValueCountsForFeature(target));
-        rootNode = buildSubTree(initNode, target, trainData);
+        buildTreeDepthLimit = PreCheck.defaultTo(depth,DEFAULT_DEPTH_LIMIT);
     }
 
     public void setPredictionDepth(int depth)
@@ -51,18 +63,20 @@ public class ID3Tree extends Classifier
     {
         return rootNode;
     }
+
     private static FeatureNode buildSubTree(FeatureNode parent, Feature target, DataSet dataSet)
     {
         // If target feature has same value in all examples, create leaf
-        if (dataSet.getValueCountsForFeature(target).size() <= 1
-                || parent.distanceFromRoot() == buildTreeDepthLimit)
+        if (dataSet.countValuesForFeature(target,true).size() <= 1
+                || parent.distanceFromRoot() >= buildTreeDepthLimit
+                || dataSet.size()< MIN_LEAF_DATA_SIZE)
             return createLeafNodeForTarget(parent, target, dataSet);
 
         // Find feature with best info gain and create a new node for it
-        Feature feature = dataSet.getFeatureWithBestInfoGainFor(target); // fixme this is not removing feature after being used
+        Feature feature = dataSet.getFeatureWithBestInfoGainFor(target); // fixme? not removing already used features...
         assert PreCheck.notNull(feature)
                 : "Feature with best gain should always be found. " + dataSet.getFeatures().toString();
-        if (PreCheck.contains(feature.getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
+        if (PreCheck.contains(feature.getFeatureType(), ValueParser.Type.BOOLEAN, ValueParser.Type.TEXT)) {
             return createValueNodeForFeature(parent, target, feature, dataSet);
         } else {
             return createContinuousNodeForFeature(parent, target, feature, dataSet);
@@ -72,10 +86,10 @@ public class ID3Tree extends Classifier
     private static FeatureNode createLeafNodeForTarget(FeatureNode parent, Feature target, DataSet dataSet)
     {
         //checkNodeInputs(parent, target, dataSet);
-        FeatureNode leaf = new FeatureNode(target, parent.getFeatures());
+        FeatureNode leaf = new FeatureNode(parent,target, parent.getFeatures());
 
-        leaf.setTargetDistributions(dataSet.getValueCountsForFeature(target));
-        log.info("Created Leaf Node: {} with Dist: {}", leaf.getName(), leaf.getTargetDistributions());
+        leaf.setTargetDistributions(dataSet.countValuesForFeature(target,true));
+        log.info("Created Leaf Node: {} with Dist: {}", leaf.name(), leaf.getTargetDistributions());
         return leaf;
     }
 
@@ -85,28 +99,27 @@ public class ID3Tree extends Classifier
         // Create new node with parents features - newFeature
         Collection<Feature> remainingFeatures = parent.getFeatures();
         remainingFeatures.remove(feature);
-        FeatureNode newNode = new FeatureNode(feature, remainingFeatures);
-        newNode.setTargetDistributions(dataSet.getValueCountsForFeature(target));
-        log.info("Created Value Node {} with Dist: {}", newNode.getName(), newNode.getTargetDistributions());
+        FeatureNode newNode = new FeatureNode(parent,feature, remainingFeatures);
+        newNode.setTargetDistributions(dataSet.countValuesForFeature(target,true));
+        log.info("Created Value Node {} with Dist: {}", newNode.name(), newNode.getTargetDistributions());
 
         // Create child nodes for each value of feature, and split data set on that value
-        Map<Comparable, List<Map<String, Comparable>>> valueSubSets2 = feature.splitDataOnValues(dataSet.getData());
-        Map<Comparable, DataSet> valSubSets = dataSet.subsetOnFeatureValues(feature);
+        Map<Comparable, DataSet> valSubSets = dataSet.subsetOnFeatureValues(feature,true);
         // TODO: ttoggweiler 4/19/17 getStream and metrics
         if (useStreams) {
             getStream(valSubSets.entrySet())
-                    .filter(entry-> PreCheck.notEmpty(entry.getValue().getData()))//fixme do we want to filter? no child would exist for that val
+                    .filter(entry-> PreCheck.notEmpty(entry.getValue().getData()))
                     .forEach(valSubsetEntry -> {
                         FeatureNode child = buildSubTree(newNode, target, valSubsetEntry.getValue());
                         newNode.addEdge("=" + valSubsetEntry.getKey().toString(), valSubsetEntry.getKey(), child, false);
-                        log.debug("{} -- hasChild -> {} for value: {}{}", newNode.getName(), child.getName(), feature.getName(), child.getParentEdgeName());
+                        log.debug("{} -- hasChild -> {} for value: {}{}", newNode.name(), child.name(), feature.name(), child.getParentEdgeName());
                     });
 
         } else {
             for (Map.Entry<Comparable, DataSet> valSubsetEntry : valSubSets.entrySet()) {
                 FeatureNode child = buildSubTree(newNode, target, valSubsetEntry.getValue());
                 newNode.addEdge("=" + valSubsetEntry.getKey().toString(), valSubsetEntry.getKey(), child, false);
-                log.debug("{} -- hasChild -> {} for value: {}{}", newNode.getName(), child.getName(), feature.getName(), child.getParentEdgeName());
+                log.debug("{} -- hasChild -> {} for value: {}{}", newNode.name(), child.name(), feature.name(), child.getParentEdgeName());
             }
         }
         return newNode;
@@ -117,19 +130,25 @@ public class ID3Tree extends Classifier
 
         checkNodeInputs(parent, target, dataSet);
         // Create new node
-        FeatureNode newNode = new FeatureNode(feature, parent.getFeatures());
-        newNode.setTargetDistributions(dataSet.getValueCountsForFeature(target));
-        log.info("Created Continuous Node {} with Dist: {}", newNode.getName(), newNode.getTargetDistributions());
+        FeatureNode newNode = new FeatureNode(parent,feature, parent.getFeatures());
+        newNode.setTargetDistributions(dataSet.countValuesForFeature(target,true));
+        log.info("Created Continuous Node {} with Dist: {}", newNode.name(), newNode.getTargetDistributions());
 
-        // Find a single best value to split data on
-        //Comparable lowestEntropyValue2 = feature.getValueWithLowestEntropy(target, dataSet);
+        //Get entropy for all unused values
+        Map<Comparable, Double> entropyMap = dataSet.mapFeatureValuesToTargetEntropy(feature, target, false).entrySet().stream()
+                .filter(e -> !parent.hasFeatureValueBeenUsedBefore(feature, e.getKey())) // Filter out previously used values
+                .collect(Collectors.toMap(Map.Entry :: getKey,Map.Entry :: getValue));
 
-        //todo use equivalnt entropy with larger set
-        Comparable lowestEntropyValue = dataSet.mapFeatureValuesToTargetEntropy(target, feature).entrySet().stream()
-                .filter(e -> !parent.hasFeatureValueBeenUsedBefore(feature, e.getKey()))
-                .min(Comparator.comparingDouble(Map.Entry::getValue))
-                .map(Map.Entry::getKey)
-                .orElse(null);
+        // Get datasets sizes for values
+        Map<Comparable,Integer> lowEntropyValueDataSetSizes = MapUtil.keysForMin(entropyMap).stream()
+                .collect(Collectors.toMap(s ->s, s -> dataSet.subsetForFeatureValue(feature,s,false).size()));
+        // Get values with largest data sets
+        Set<Comparable> minEntropyMaxDataSetSizeFeatureValues = MapUtil.keysForMax(lowEntropyValueDataSetSizes);
+        // Pick random feature value that has best entropy and has the largest dataset
+        Comparable lowestEntropyValue = PreCheck.notEmpty(minEntropyMaxDataSetSizeFeatureValues)
+                ?RandomUtil.randomElement(minEntropyMaxDataSetSizeFeatureValues)
+                :RandomUtil.randomElement(entropyMap.keySet());
+
 
         if (lowestEntropyValue == null)
             return newNode;
@@ -144,7 +163,7 @@ public class ID3Tree extends Classifier
         if (PreCheck.notEmpty(positiveSubSet.getData()) || false) {
             FeatureNode positiveChild = buildSubTree(newNode, target, positiveSubSet);
             newNode.addEdge(">=" + lowestEntropyValue, lowestEntropyValue, positiveChild, false);
-            log.debug("{} -- hasChild -> {} for value: {}{}", newNode.getName(), positiveChild.getName(), feature.getName(), positiveChild.getParentEdgeName());
+            log.debug("{} -- hasChild -> {} for value: {}{}", newNode.name(), positiveChild.name(), feature.name(), positiveChild.getParentEdgeName());
 
         } else
             log.warn("No positive child created because data set is empty");
@@ -153,7 +172,7 @@ public class ID3Tree extends Classifier
         if (PreCheck.notEmpty(negativeSubset.getData()) || false) {
             FeatureNode negativeChild = buildSubTree(newNode, target, negativeSubset);
             newNode.addEdge("<" + lowestEntropyValue, lowestEntropyValue, negativeChild, true);
-            log.debug("{} -- hasChild -> {} for value: {}{}", newNode.getName(), negativeChild.getName(), feature.getName(), negativeChild.getParentEdgeName());
+            log.debug("{} -- hasChild -> {} for value: {}{}", newNode.name(), negativeChild.name(), feature.name(), negativeChild.getParentEdgeName());
         } else
             log.warn("No negative child created because data set is empty");
 
@@ -161,11 +180,20 @@ public class ID3Tree extends Classifier
     }
 
     @Override
+    public void train(DataSet trainData)
+    {
+        initWithDataSet(trainData);
+        FeatureNode initNode = new FeatureNode(null,target,trainData.getFeatures());
+        initNode.setTargetDistributions(trainData.countValuesForFeature(target,true));
+        rootNode = buildSubTree(initNode, target, trainData);
+    }
+
+    @Override
     public Map<String, Comparable> classifyExample(Map<String, Comparable> example)
     {
         Comparable prediction = rootNode.getClassification(example);
         Map<String, Comparable> predictionMap = new HashMap<>(1);
-        predictionMap.put(this.target.getName(), prediction);
+        predictionMap.put(this.target.name(), prediction);
         return predictionMap;
     }
 
@@ -188,5 +216,10 @@ public class ID3Tree extends Classifier
         return (useParallelStreams && collection.size() > parallelThreshold)
                 ? collection.parallelStream()
                 : collection.stream();
+    }
+
+    public Feature getTarget()
+    {
+        return target;
     }
 }

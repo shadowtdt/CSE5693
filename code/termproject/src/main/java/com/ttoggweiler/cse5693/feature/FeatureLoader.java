@@ -138,7 +138,7 @@ public class FeatureLoader
             List<Feature> features = FeatureLoader.loadFeaturesFromFile(fileToLoad);
             log.info("Loaded {} features: ", features.size());
             features.forEach(feature -> {
-                log.info("Feature Name: {} Values: {}",feature.getName(),feature.getValues());
+                log.info("Feature Name: {} Values: {}",feature.name(),feature.getAllValues());
             });
         } catch (IOException e) {
             log.error("Failed loading features from file.", e);

@@ -1,5 +1,6 @@
 package com.ttoggweiler.cse5693.predict;
 
+import com.ttoggweiler.cse5693.data.DataSet;
 import com.ttoggweiler.cse5693.util.Identity;
 import com.ttoggweiler.cse5693.util.PreCheck;
 
@@ -10,14 +11,14 @@ import java.util.Set;
 
 /**
  * Performance data of a Rule/RuleSetClassifier accuracy for a given data set.
- * Such as: %correct, Classification Times, resource usuage..
+ * Such as: %correct, Classification Times, resource usage..
  */
 public class Performance extends Identity
 {
     private Classifier classifier;
     private double completionTime;
-    private Set<Map<String,? extends Comparable>> correctClassifications;
-    private Set<Map<String,? extends Comparable>> incorrectClassifications;
+    private Set<Map<String, Comparable>> correctClassifications;
+    private Set<Map<String, Comparable>> incorrectClassifications;
 
 
     public Performance(Classifier classifier, Collection<Map<String,Comparable>> exampleData)
@@ -27,14 +28,19 @@ public class Performance extends Identity
         completionTime = System.currentTimeMillis();
     }
 
+    public Performance(Classifier classifier, DataSet exampleData)
+    {
+        this(classifier,exampleData.getData());
+    }
+
     private double measureClassificationPerformance(Collection<Map<String,Comparable>> exampleData)
     {
         correctClassifications = new HashSet<>();
         incorrectClassifications = new HashSet<>();
         for (Map<String, Comparable> example : exampleData) {
-//            Comparable classification = example.get(classifier.getTargetFeatures().getName());
+//            Comparable classification = example.get(classifier.getTargetFeatures().name());
 //            if(classification == null)
-//                throw new NullPointerException("Unable to measure performance of classifier. Example data is missing target feature: "+classifier.getName());
+//                throw new NullPointerException("Unable to measure performance of classifier. Example data is missing target feature: "+classifier.name());
 //            Comparable prediction = this.classifier.classifyExample(example);
 //            if(prediction.compareTo(classification) == 0)
 
@@ -59,13 +65,13 @@ public class Performance extends Identity
 
     public String getExampleCounts()
     {
-        return "+" + correctClassifications.size() + "|-"+incorrectClassifications.size()
-                +"/"+(correctClassifications.size()+incorrectClassifications.size());
+        return "(+" + correctClassifications.size() + "|-"+incorrectClassifications.size()
+                +")/"+(correctClassifications.size()+incorrectClassifications.size());
     }
 
     public double getDuration()
     {
-        return completionTime -getCreationTime();
+        return completionTime - creationMili();
     }
 
     public String getDurationString()
@@ -90,6 +96,27 @@ public class Performance extends Identity
             sb.append(classifier.getClassifierString(false));
         }
         return sb.toString();
+    }
+
+    /* Field methods */
+    public Set<Map<String,Comparable>> getCorrectClassifications()
+    {
+        return correctClassifications;
+    }
+
+    public void setCorrectClassifications(Set<Map<String,Comparable>> correctClassifications)
+    {
+        this.correctClassifications = correctClassifications;
+    }
+
+    public Set<Map<String, Comparable>> getIncorrectClassifications()
+    {
+        return incorrectClassifications;
+    }
+
+    public void setIncorrectClassifications(Set<Map<String,Comparable>> incorrectClassifications)
+    {
+        this.incorrectClassifications = incorrectClassifications;
     }
 
 }

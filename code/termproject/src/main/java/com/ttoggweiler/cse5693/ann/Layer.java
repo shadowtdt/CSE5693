@@ -34,7 +34,7 @@ public class Layer extends Identity
     {
         if(isHiddenLayer())throw new IllegalArgumentException("Only input and output layers can set values");
         for (Node node : nodesInLayer) {
-            node.setNodeValue(inputValues.get(node.getName()));
+            node.setNodeValue(inputValues.get(node.name()));
         }
     }
 
@@ -73,7 +73,7 @@ public class Layer extends Identity
 
     public String getTopologyString()
     {
-        StringBuilder topologyStringBuilder = new StringBuilder("-Layer: "+getName()+"\n");
+        StringBuilder topologyStringBuilder = new StringBuilder("-Layer: "+ name()+"\n");
         for(Node node : nodesInLayer)
         {
             topologyStringBuilder.append("\t\t");

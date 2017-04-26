@@ -79,13 +79,13 @@ public class Edge extends Identity
             weightDelta += momentum * lastWeightDelta;
         lastWeightDelta = weightDelta;
         Double newWeight = getWeight() + weightDelta;
-        //log.debug("{}: {} -> {}",getName(),getWeight(),newWeight);
+        //log.debug("{}: {} -> {}",name(),getWeight(),newWeight);
         this.setWeight(newWeight);
     }
 
     public String toString()
     {
-        String edgeString =  "-Edge: "+getName()+ " --> "+ targetNode.getName() + " W("+getWeight()+")";
+        String edgeString =  "-Edge: "+ name()+ " --> "+ targetNode.name() + " W("+getWeight()+")";
         if (lastEdgeResult != null && lastEdgeResult.getError() != null)
             edgeString += " WE("+ lastEdgeResult.getWeightedError()+")";
         return edgeString;

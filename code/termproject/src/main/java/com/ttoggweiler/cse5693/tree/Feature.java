@@ -1,7 +1,7 @@
 //package com.ttoggweiler.cse5693.tree;
 //
 //import com.ttoggweiler.cse5693.util.MoreMath;
-//import com.ttoggweiler.cse5693.util.Parser;
+//import com.ttoggweiler.cse5693.util.ValueParser;
 //import com.ttoggweiler.cse5693.util.PreCheck;
 //
 //import java.util.ArrayList;
@@ -22,17 +22,17 @@
 //{
 //    private UUID id = UUID.randomUUID();
 //    private String name;
-//    private Parser.Type type;
+//    private ValueParser.Type type;
 //    private HashMap<Comparable, Predicate<Map<String, Comparable>>> values = new HashMap<Comparable, Predicate<Map<String, Comparable>>>();
 //
-//    public Feature(String name, Parser.Type type, Set<T> values)
+//    public Feature(String name, ValueParser.Type type, Set<T> values)
 //    {
 //        this.setName(name);
 //        this.setFeatureType(type);
 //        this.setValues(values);
 //    }
 //
-//    public Feature(String name, Parser.Type type, T... values)
+//    public Feature(String name, ValueParser.Type type, T... values)
 //    {
 //        this.setName(name);
 //        this.setFeatureType(type);
@@ -54,12 +54,12 @@
 //        if (!PreCheck.isEmpty(name)) this.name = name.trim();
 //    }
 //
-//    public Parser.Type getFeatureType()
+//    public ValueParser.Type getFeatureType()
 //    {
 //        return type;
 //    }
 //
-//    public void setFeatureType(Parser.Type type)
+//    public void setFeatureType(ValueParser.Type type)
 //    {
 //        if (!PreCheck.isNull(type)) this.type = type;
 //    }
@@ -87,11 +87,11 @@
 //        PreCheck.ifNull("Unable to add null value to feature "+ this.getName(), value);
 //
 //        Predicate<Map<String, Comparable>> valuePredicate;
-//        if (PreCheck.contains(getFeatureType(), Parser.Type.BOOLEAN, Parser.Type.STRING)) {
-//            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).equals(value);
+//        if (PreCheck.contains(getFeatureType(), ValueParser.Type.BOOLEAN, ValueParser.Type.STRING)) {
+//            valuePredicate = x -> x.containsKey(this.name()) && x.get(this.name()).equals(value);
 //            this.values.put(value, valuePredicate);
 //        } else {
-//            valuePredicate = x -> x.containsKey(this.getName()) && x.get(this.getName()).compareTo(value) >= 0;
+//            valuePredicate = x -> x.containsKey(this.name()) && x.get(this.name()).compareTo(value) >= 0;
 //            this.values.put(value, valuePredicate);
 //        }
 //        return valuePredicate;
@@ -146,7 +146,7 @@
 //        if (splitFeature.length < 2)
 //            throw new IllegalArgumentException("Feature string must include a label and type/value parameters " + featureString);
 //        String name = splitFeature[0].trim();
-//        Parser.Type type = Parser.getType(splitFeature[1]).orElseThrow(() -> new IllegalArgumentException("Unknown type found " + splitFeature[1]));
+//        ValueParser.Type type = ValueParser.getType(splitFeature[1]).orElseThrow(() -> new IllegalArgumentException("Unknown type found " + splitFeature[1]));
 //
 //        switch (type) {
 //            case BOOLEAN:
@@ -155,7 +155,7 @@
 //                Feature<Integer> intFeature = new Feature<Integer>(name, type);
 //                if (splitFeature.length > 2)
 //                    for (int i = 1; i < splitFeature.length; i++) {
-//                        intFeature.addValue(Parser.toInteger(splitFeature[i])
+//                        intFeature.addValue(ValueParser.toInteger(splitFeature[i])
 //                                .orElseThrow(() -> new IllegalArgumentException("Failed to parse int from string; " + featureString)));
 //                    }
 //                return intFeature;
@@ -163,7 +163,7 @@
 //                Feature<Long> longFeature = new Feature<Long>(name, type);
 //                if (splitFeature.length > 2)
 //                    for (int i = 1; i < splitFeature.length; i++) {
-//                        longFeature.addValue(Parser.toLong(splitFeature[i])
+//                        longFeature.addValue(ValueParser.toLong(splitFeature[i])
 //                                .orElseThrow(() -> new IllegalArgumentException("Failed to parse long from string; " + featureString)));
 //                    }
 //                return longFeature;
@@ -171,7 +171,7 @@
 //                Feature<Float> floatFeature = new Feature<Float>(name, type);
 //                if (splitFeature.length > 2)
 //                    for (int i = 1; i < splitFeature.length; i++) {
-//                        floatFeature.addValue(Parser.toFloat(splitFeature[i])
+//                        floatFeature.addValue(ValueParser.toFloat(splitFeature[i])
 //                                .orElseThrow(() -> new IllegalArgumentException("Failed to parse float from string; " + featureString)));
 //                    }
 //                return floatFeature;
@@ -179,7 +179,7 @@
 //                Feature<Double> doubleFeature = new Feature<Double>(name, type);
 //                if (splitFeature.length > 2)
 //                    for (int i = 1; i < splitFeature.length; i++) {
-//                        doubleFeature.addValue(Parser.toDouble(splitFeature[i])
+//                        doubleFeature.addValue(ValueParser.toDouble(splitFeature[i])
 //                                .orElseThrow(() -> new IllegalArgumentException("Failed to parse Double from string; " + featureString)));
 //                    }
 //                return doubleFeature;
@@ -200,22 +200,22 @@
 //     * @param valueString string to parse value for
 //     * @return Optional of the parsed value
 //     */
-//    public Optional<T> parseValue(String valueString)
+//    public Optional<T> toValue(String valueString)
 //    {
 //        // TODO: ttoggweiler 2/16/17 validate on value set
 //        if (PreCheck.isEmpty(valueString)) return Optional.empty();
 //
 //        switch (getFeatureType()) {
 //            case BOOLEAN:
-//                return (Parser.toBoolean(valueString).map(v -> (T) v));
+//                return (ValueParser.toBoolean(valueString).map(v -> (T) v));
 //            case INTIGER:
-//                return (Parser.toInteger(valueString).map(v -> (T) v));
+//                return (ValueParser.toInteger(valueString).map(v -> (T) v));
 //            case LONG:
-//                return (Parser.toLong(valueString).map(v -> (T) v));
+//                return (ValueParser.toLong(valueString).map(v -> (T) v));
 //            case FLOAT:
-//                return (Parser.toFloat(valueString).map(v -> (T) v));
+//                return (ValueParser.toFloat(valueString).map(v -> (T) v));
 //            case DOUBLE:
-//                return (Parser.toDouble(valueString).map(v -> (T) v));
+//                return (ValueParser.toDouble(valueString).map(v -> (T) v));
 //            case STRING:
 //                return Optional.of((T) valueString.toLowerCase().trim());
 //            default:

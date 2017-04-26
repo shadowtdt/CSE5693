@@ -71,7 +71,9 @@ public class Node extends Identity
                 : sumAndSquishInputs(currentInputEdgeResults); // other layers
 
         Set<EdgeResult> outputEdgeResults = isOutputNode() ? null // outputLayer
-                : outputEdges.stream().map(edge -> edge.feedForward(nodeValue)).collect(Collectors.toSet()); // other layers
+                : outputEdges.stream()
+                .map(edge -> edge.feedForward(nodeValue))
+                .collect(Collectors.toSet()); // other layers
 
         lastNodeResult = new NodeResult(nodeValue, currentInputEdgeResults, outputEdgeResults);
         currentInputEdgeResults = null;
@@ -80,27 +82,27 @@ public class Node extends Identity
 
     public void backPropagate()
     {
-        if(isInputNode())return;
+        if (isInputNode()) return;
         Double predictedValue = getLastNodeResult().getValue();
         Double errorDelta = isOutputNode() ? (this.nodeValue - predictedValue)
-                :lastNodeResult.getOutputEdgeResults().stream().mapToDouble(EdgeResult::getWeightedError).sum();
+                : lastNodeResult.getOutputEdgeResults().stream().mapToDouble(EdgeResult::getWeightedError).sum();
 
-        Double error = predictedValue * (1 - predictedValue) * errorDelta;
+        Double error = (predictedValue * (1 - predictedValue)) * errorDelta;
         lastNodeResult.setError(error);
     }
 
     private static Double sumAndSquishInputs(Set<EdgeResult> inputEdges)
     {
-        PreCheck.ifEmpty(()->new IllegalArgumentException("No inputs provided"),inputEdges);
+        PreCheck.ifEmpty(() -> new IllegalArgumentException("No inputs provided"), inputEdges);
         Double netInput = inputEdges.stream().mapToDouble(EdgeResult::getWeightedOutput).sum();
         return MoreMath.sigmoidFunction(netInput);
     }
 
     public void updateWeights(Double learningRate, Double momentum)
     {
-        if(isInputNode())return;
+        if (isInputNode()) return;
         for (Edge inputEdges : inputEdges) {
-            inputEdges.updateWeights(learningRate,momentum);
+            inputEdges.updateWeights(learningRate, momentum);
         }
     }
 
@@ -127,7 +129,7 @@ public class Node extends Identity
 
     public String getTopologyString()
     {
-        StringBuilder topologyStringBuilder = new StringBuilder("-Node: " + getName());
+        StringBuilder topologyStringBuilder = new StringBuilder("-Node: " + name());
         if (lastNodeResult != null) topologyStringBuilder.append(" V(" + lastNodeResult.getValue() + ")");
         if (lastNodeResult != null && lastNodeResult.getError() != null)
             topologyStringBuilder.append(" E(" + lastNodeResult.getError() + ")");

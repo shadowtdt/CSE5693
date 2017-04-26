@@ -16,10 +16,18 @@
             <AppenderRef ref="logFile" />
             <AppenderRef ref="console" />
         </logger>
-        <!--<logger name="com.ttoggweiler.cse5693.genetic" level="debug" additivity="false">-->
-            <!--<AppenderRef ref="logFile" />-->
-            <!--<AppenderRef ref="console" />-->
-        <!--</logger>-->
+        <logger name="com.ttoggweiler.cse5693.tree" level="warn" additivity="false">
+            <AppenderRef ref="logFile" />
+            <AppenderRef ref="console" />
+        </logger>
+        <logger name="com.ttoggweiler.cse5693.ann" level="warn" additivity="false">
+            <AppenderRef ref="logFile" />
+            <AppenderRef ref="console" />
+        </logger>
+        <logger name="com.ttoggweiler.cse5693.explore" level="debug" additivity="false">
+            <AppenderRef ref="logFile" />
+            <AppenderRef ref="console" />
+        </logger>
 
     </Loggers>
 </Configuration>

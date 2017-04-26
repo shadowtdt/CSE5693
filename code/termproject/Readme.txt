@@ -1,6 +1,6 @@
-This Project and its dependencies are managed by maven. see file /cse5693hw4/pom.xml for dependencies
+This Project and its dependencies are managed by maven. see file /termproject/pom.xml for dependencies
 
-To compile a new jar, in /cse5693hw4 run:  "mvn package"
+To compile a new jar, in /termproject run:  "mvn package"
 This will create two jars, one with and one without dependencies. They will be created in the /target folder
 ** Note this requires the maven package to be installed, the code server at fit does not have this installed. Submission includes precompiled jar. **
 
@@ -13,12 +13,11 @@ with args:
 -tfile=             training data file path
 =vfile=             validation data file path
 
--mutationRate
--population
--replaceRate
--fitThreshold
--generations
--selection <rank, fitprop, tournament >
+-learningrate
+-iterations
+-momentum
+-treedepth
+-input <tennis, iris, soy-lg, thyroid, bool>
 -script  <selction, replace>
 
 Scripts: (Dir: /scripts)

@@ -1,12 +1,12 @@
 package com.ttoggweiler.cse5693.predict;
 
+import com.ttoggweiler.cse5693.data.DataSet;
 import com.ttoggweiler.cse5693.feature.Feature;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +24,12 @@ public class RuleSetClassifier extends Classifier
         for (int i = 0; i <= ruleCount; i++) {
             ruleList.add(new Rule(features,targetFeatures));
         }
+    }
+
+    @Override
+    public void train(DataSet trainingSet)
+    {
+        throw new IllegalStateException("Not Impli");
     }
 
     @Override

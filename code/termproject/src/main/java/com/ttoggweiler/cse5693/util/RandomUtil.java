@@ -1,5 +1,6 @@
 package com.ttoggweiler.cse5693.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,7 +21,8 @@ public class RandomUtil
         return (prob > 1) || rand.nextDouble() <= prob;
     }
 
-    public static <T> T selectRandomElement(Collection<T> collection)
+    /* Collection */
+    public static <T,C extends Collection<T>> T randomElement(C collection)
     {
         PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random element from null or empty collection"),collection);
         int randomIndex = rand.nextInt(collection.size());
@@ -28,28 +30,70 @@ public class RandomUtil
         throw new AssertionError();
     }
 
-    public static <T> Collection<T> selectRandomElements(Collection<T> collection, long numberToSelect)
+    public static <T> Collection<T> randomElements(Collection<T> collection, long numberToSelect)
     {
         PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random elements from null or empty collection"),collection);
         if(numberToSelect <= 0)return Collections.emptySet();
         else if(numberToSelect >= collection.size())return collection;
 
         Collection<T> selected = new HashSet<>((int)numberToSelect);
+        Collection<T> collectionCopy = new ArrayList<T>(collection);
 
-        while(selected.size() != numberToSelect)
-            selected.add(selectRandomElement(collection));
+        while(selected.size() < numberToSelect) {
+            T val = randomElement(collectionCopy);
+            selected.add(val);
+            collectionCopy.remove(val);
+        }
 
         return selected;
     }
 
-    public static <T> Collection<T> selectRandomPercent(Collection<T> collection, double percent)
+    public static <T>Collection<T> randomElements(Collection<T> collection, double percent)
     {
         PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random elements from null or empty collection"),collection);
         if(percent <= 0)return Collections.emptySet();
         else if(percent >= 1)return collection;
 
         int numberToSelect = (int)Math.round(collection.size() * percent);
-        return selectRandomElements(collection,numberToSelect);
+        return randomElements(collection,numberToSelect);
+    }
+
+    /* List */
+    public static <T,C extends List<T>> T randomElement(C collection)
+    {
+        PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random element from null or empty collection"),collection);
+        int randomIndex = rand.nextInt(collection.size());
+        for (T t : collection) if(randomIndex-- <= 0) return t;
+        throw new AssertionError();
+    }
+
+    public static <T> List<T> randomElements(List<T> collection, long numberToSelect)
+    {
+        PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random elements from null or empty collection"),collection);
+        if(numberToSelect <= 0)return Collections.emptyList();
+        else if(numberToSelect >= collection.size())return collection;
+
+        List<T> selected = new ArrayList<>((int)numberToSelect);
+        List<T> listCopy = new ArrayList<>(collection);
+
+        while(selected.size() < numberToSelect) {
+            T val = randomElement(listCopy);
+            selected.add(val);
+            listCopy.remove(val);
+        }
+
+        return selected;
+    }
+
+    public static <T>List<T> randomElements(List<T> collection, double percent)
+    {
+        PreCheck.ifEmpty(() -> new IllegalArgumentException("Unable to get random elements from null or empty collection"),collection);
+        if(percent <= 0)return Collections.emptyList();
+        else if(percent >= 1)return collection;
+
+        int numberToSelect = (int)Math.round(collection.size() * percent);
+        if(numberToSelect < 1)numberToSelect = 1;
+        return randomElements(collection,numberToSelect);
     }
 
     public static <T> List<T> shuffle(Collection<T> collection)

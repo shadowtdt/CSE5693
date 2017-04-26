@@ -28,12 +28,12 @@ public class Condition implements Predicate<Map<String,? extends Comparable>>
         while(!this.isValidCondition()) {
             this.featureConditions = new TreeMap<>();
             if (feature.isContinuous()) {
-                Comparable randValue = PreCheck.notEmpty(feature.getValues())
-                        ? RandomUtil.selectRandomElement(feature.getValues())
+                Comparable randValue = PreCheck.notEmpty(feature.getAllValues())
+                        ? RandomUtil.randomElement(feature.getAllValues())
                         : RandomUtil.rand.nextFloat() * 10;
                 featureConditions.put(randValue,  Boolean.TRUE);
             } else {
-                for (Comparable featureValue : feature.getValues())
+                for (Comparable featureValue : feature.getAllValues())
                     featureConditions.put(featureValue, RandomUtil.probability(.2)
                             ? Boolean.TRUE : Boolean.FALSE);
             }
@@ -57,7 +57,7 @@ public class Condition implements Predicate<Map<String,? extends Comparable>>
     @Override
     public boolean test(Map<String,? extends Comparable> stringComparableMap)
     {
-        Comparable exampleValue = stringComparableMap.get(conditionFeature.getName());
+        Comparable exampleValue = stringComparableMap.get(conditionFeature.name());
         return conditionFeature.isContinuous()
                 ? (featureConditions.firstKey().compareTo(exampleValue) >= 0) == featureConditions.get(featureConditions.firstKey())
                 : featureConditions.get(exampleValue);
@@ -104,7 +104,7 @@ public class Condition implements Predicate<Map<String,? extends Comparable>>
                         ? "<" + e.getKey().toString() //+ "=" + e.getValue()
                         : e.getKey().toString() //+ "=" + e.getValue()
                 ).collect(Collectors.joining(isTargetCondition?" AND " : " OR "
-                        ,conditionFeature.getName()+"{","}"));
+                        ,conditionFeature.name()+"{","}"));
 
     }
 }

@@ -1,14 +1,13 @@
 package com.ttoggweiler.cse5693.predict;
 
+import com.ttoggweiler.cse5693.data.DataSet;
 import com.ttoggweiler.cse5693.feature.Feature;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -16,8 +15,11 @@ import java.util.stream.Collectors;
  */
 public class Rule extends Classifier
 {
+    @Deprecated // use classifier fields/methods
     private List<Feature> targetFeatures;
+    @Deprecated // use classifier fields/methods
     private List<Feature> features;
+
     // todo map string -> condition
     private List<Condition> preConditions;
     private List<Condition> postConditions;
@@ -39,13 +41,19 @@ public class Rule extends Classifier
     }
 
     @Override
+    public void train(DataSet trainingSet)
+    {
+        throw new IllegalStateException("Not Impli");
+    }
+
+    @Override
     public Map<String,Comparable> classifyExample(Map<String,Comparable> example)
     {
         Map<String,Comparable> prediction = new HashMap<>();
         for (Condition postCondition : postConditions) {
             postCondition.getFeatureConditions().entrySet().stream()
                     .filter(Map.Entry :: getValue).findAny().ifPresent(entry ->
-                    prediction.put(postCondition.getFeature().getName(),entry.getKey()));
+                    prediction.put(postCondition.getFeature().name(),entry.getKey()));
         }
         return prediction;
     }
